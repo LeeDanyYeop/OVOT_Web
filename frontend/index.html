@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="OVOT 현장 작업자 위치 등록 및 관제" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <title>OVOT</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Show and report anything that stops the app from rendering (otherwise a white screen).
+      (function () {
+        var shown = false
+        function show(msg) {
+          try {
+            navigator.sendBeacon && navigator.sendBeacon('/api/client-log', JSON.stringify({ msg: String(msg).slice(0, 1500), url: location.href }))
+          } catch (e) {}
+          var root = document.getElementById('root')
+          if (shown || (root && root.children.length)) return
+          shown = true
+          document.body.innerHTML =
+            '<div style="font-family:sans-serif;padding:32px 24px;color:#1d1d1f;line-height:1.5">' +
+            '<p style="font-size:22px;font-weight:700;margin:0 0 12px">앱을 열 수 없습니다</p>' +
+            '<p style="color:#6e6e73;margin:0 0 16px">Chrome 최신 버전으로 열어 주세요. 카카오톡 등 앱 안의 브라우저라면 오른쪽 위 메뉴에서 "다른 브라우저로 열기"를 누르세요.</p>' +
+            '<p style="font-size:12px;color:#a1000f;word-break:break-all;margin:0 0 20px">' + String(msg).replace(/</g, '&lt;').slice(0, 300) + '</p>' +
+            '<button onclick="location.reload()" style="font-size:17px;padding:14px 28px;border-radius:980px;border:0;background:#1d1d1f;color:#fff">다시 시도</button></div>'
+        }
+        window.addEventListener('error', function (e) { show((e.message || 'error') + ' @' + (e.filename || '') + ':' + (e.lineno || '')) })
+        window.addEventListener('unhandledrejection', function (e) { show('promise: ' + ((e.reason && (e.reason.stack || e.reason.message)) || e.reason)) })
+        window.__ovotShowError = show
+        setTimeout(function () {
+          var root = document.getElementById('root')
+          if (root && !root.children.length) show('8초 동안 화면이 그려지지 않음 (스크립트 미실행)')
+        }, 8000)
+      })()
+    </script>
+    <script nomodule>
+      document.body.innerHTML = '<p style="font-family:sans-serif;padding:32px">이 브라우저는 너무 오래되어 지원되지 않습니다. Chrome으로 열어 주세요.</p>'
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
