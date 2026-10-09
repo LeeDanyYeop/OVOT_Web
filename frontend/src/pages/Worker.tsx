@@ -3,7 +3,10 @@ import { useSearchParams } from 'react-router-dom'
 import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../capture/voiceCapture'
 import { CodeEntrySheet } from '../components/CodeEntrySheet'
 import { InstallBanner } from '../components/InstallBanner'
+import { ProfileSheet } from '../components/ProfileSheet'
+import { SpeakingAvatar } from '../components/SpeakingAvatar'
 import { ApiError, api } from '../lib/api'
+import { unlockAudio } from '../lib/audio'
 import { useAuth } from '../lib/auth'
 import { hhmm } from '../lib/format'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
@@ -46,12 +49,14 @@ export function WorkerPage() {
   })
   const [zone, setZone] = useState<{ name: string; at: string } | null>(null)
   const [recording, setRecording] = useState(false)
+  const [micStream, setMicStream] = useState<MediaStream | null>(null)
   const [recStartedAt, setRecStartedAt] = useState(0)
   const [now, setNow] = useState(Date.now())
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<Notice>(null)
   const [pendingUploads, setPendingUploads] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [params, setParams] = useSearchParams()
 
   const nfcAbort = useRef<AbortController | null>(null)
@@ -117,6 +122,7 @@ export function WorkerPage() {
       return
     }
     recorderRef.current = rec
+    setMicStream(rec.mediaStream)
     setRecStartedAt(Date.now())
     setRecording(true)
     try {
@@ -131,6 +137,7 @@ export function WorkerPage() {
   const stopRecording = useCallback(() => {
     recorderRef.current?.stop()
     recorderRef.current = null
+    setMicStream(null)
     setRecording(false)
     void wakeLockRef.current?.release().catch(() => undefined)
     wakeLockRef.current = null
@@ -225,9 +232,12 @@ export function WorkerPage() {
       <header className="w-head">
         <img className="w-logo" src="/logo.png" alt="OVOT" width={104} height={36} />
         {me && (
-          <span className="w-who">
+          <button className="w-who" onClick={() => setProfileOpen(true)} aria-label={`${me.name} 프로필 보기`}>
             {me.name} · {me.team}
-          </span>
+            <span aria-hidden="true" className="w-who-chev">
+              ›
+            </span>
+          </button>
         )}
       </header>
 
@@ -261,9 +271,7 @@ export function WorkerPage() {
                 {zone.name} · {hhmm(zone.at)} 등록
               </p>
             )}
-            <div className="rec-orb" aria-hidden="true">
-              <span />
-            </div>
+            <SpeakingAvatar stream={micStream} photo={`/avatars/${me?.id ?? 'unknown'}.jpg`} name={me?.name ?? ''} />
             <h1 className="w-title">스트리밍 중</h1>
             <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
@@ -280,7 +288,14 @@ export function WorkerPage() {
             <button
               type="button"
               className={`nfc-orb ${nfcState === 'listening' ? 'is-listening' : ''} ${busy ? 'is-busy' : ''}`}
-              onClick={needsTap ? () => void startNfc() : undefined}
+              onClick={
+                needsTap
+                  ? () => {
+                      unlockAudio()
+                      void startNfc()
+                    }
+                  : undefined
+              }
               disabled={!needsTap}
               aria-label={needsTap ? 'NFC 스캔 시작' : 'NFC 태그 대기 중'}
             >
@@ -308,6 +323,7 @@ export function WorkerPage() {
         </button>
       </footer>
 
+      {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
       {sheetOpen && <CodeEntrySheet onSubmit={(c, s) => void submit(c, s)} onClose={() => setSheetOpen(false)} />}
     </div>
   )

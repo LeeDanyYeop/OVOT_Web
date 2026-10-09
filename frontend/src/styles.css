@@ -300,8 +300,29 @@ code,
   letter-spacing: 0.08em;
 }
 .w-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 4px 0 12px;
+  border: 0;
+  border-radius: 980px;
+  background: transparent;
   color: #d2d2d7;
+  font: inherit;
   font-size: 0.95rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.w-who:hover,
+.w-who:active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.w-who-chev {
+  font-size: 1.3rem;
+  line-height: 1;
+  color: #86868b;
 }
 .w .install-banner {
   margin: 16px 20px 0;
@@ -1040,4 +1061,195 @@ code,
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Speaking avatar (streaming) — photo is cropped to a circle, centered on the face */
+.speaker {
+  --lvl: 0;
+  position: relative;
+  width: 156px;
+  height: 156px;
+  margin: 22px 0 14px;
+}
+.speaker-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 calc(3px + var(--lvl) * 16px) rgba(0, 113, 227, calc(0.14 + var(--lvl) * 0.4));
+  transition: box-shadow 0.08s linear;
+}
+.speaker-photo {
+  position: relative;
+  display: block;
+  width: 156px;
+  height: 156px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  border: 4px solid #fff;
+  box-shadow: 0 16px 36px -16px rgba(29, 29, 31, 0.45);
+  background: var(--bg-alt);
+}
+.speaker-initial {
+  display: grid;
+  place-items: center;
+  font-size: 3.4rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+/* speech bubble with live level bars */
+.speaker-badge {
+  position: absolute;
+  right: -14px;
+  bottom: 6px;
+  width: 58px;
+  height: 46px;
+  border-radius: 18px 18px 18px 6px;
+  background: var(--accent);
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 8px 20px -8px rgba(0, 113, 227, 0.6);
+}
+.speaker-badge i {
+  display: block;
+  width: 4px;
+  border-radius: 2px;
+  background: #fff;
+  height: calc(5px + var(--lvl) * 22px * var(--f));
+  transition: height 0.08s linear;
+}
+.speaker.no-meter .speaker-badge i {
+  animation: talk 0.9s ease-in-out infinite;
+}
+@keyframes talk {
+  0%,
+  100% {
+    height: 6px;
+  }
+  50% {
+    height: 18px;
+  }
+}
+
+/* Profile overlay (Apple settings-style grouped list) */
+.profile {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--bg-alt);
+  overflow-y: auto;
+  animation: slide-in 0.22s ease-out;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@keyframes slide-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+.profile-bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  background: rgba(245, 245, 247, 0.88);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.profile-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+.profile-back span {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.profile-body {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 8px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.profile-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 12px 0 4px;
+}
+.profile-photo {
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  border: 4px solid #fff;
+  box-shadow: 0 14px 30px -14px rgba(29, 29, 31, 0.45);
+  background: #fff;
+  margin-bottom: 8px;
+}
+.profile-name {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.profile-sub {
+  color: var(--muted);
+}
+.profile-h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 8px 16px;
+}
+.profile-group {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--hairline);
+}
+.profile-row:first-child {
+  border-top: 0;
+}
+.profile-row > span {
+  color: var(--muted);
+  flex: none;
+}
+.profile-row > strong {
+  font-weight: 600;
+  text-align: right;
+}
+.profile-row small {
+  color: var(--muted);
+  font-weight: 500;
+  margin-left: 4px;
+}
+.profile-row .is-ok {
+  color: var(--ok);
+}
+.profile-row .is-warn {
+  color: var(--warn);
 }

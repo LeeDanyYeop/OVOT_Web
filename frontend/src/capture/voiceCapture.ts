@@ -39,6 +39,10 @@ export class SegmentRecorder {
     return this.running
   }
 
+  get mediaStream(): MediaStream | null {
+    return this.stream
+  }
+
   async start(): Promise<void> {
     if (this.running) return
     this.stream = await navigator.mediaDevices.getUserMedia({
