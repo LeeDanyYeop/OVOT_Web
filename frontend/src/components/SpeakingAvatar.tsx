@@ -7,9 +7,7 @@ interface Props {
   name: string
 }
 
-const BAR_FACTORS = [0.55, 1, 0.75, 0.4]
-
-/** Worker photo whose ring and speech-bubble bars follow the live microphone level. */
+/** Worker photo whose soft shadow deepens with the live microphone level. */
 export function SpeakingAvatar({ stream, photo, name }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [photoOk, setPhotoOk] = useState(true)
@@ -42,7 +40,7 @@ export function SpeakingAvatar({ stream, photo, name }: Props) {
           sum += v * v
         }
         const rms = Math.sqrt(sum / buf.length)
-        level = level * 0.55 + Math.min(1, rms * 6) * 0.45
+        level = level * 0.85 + Math.min(1, rms * 6) * 0.15
         root.style.setProperty('--lvl', level.toFixed(3))
         root.classList.toggle('is-speaking', level > 0.08)
       }
@@ -66,11 +64,6 @@ export function SpeakingAvatar({ stream, photo, name }: Props) {
           {name.slice(0, 1)}
         </span>
       )}
-      <span className="speaker-badge" aria-hidden="true">
-        {BAR_FACTORS.map((f, i) => (
-          <i key={i} style={{ ['--f' as string]: f, animationDelay: `${i * 0.12}s` }} />
-        ))}
-      </span>
     </div>
   )
 }

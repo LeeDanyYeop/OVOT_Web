@@ -1073,10 +1073,25 @@ code,
 }
 .speaker-ring {
   position: absolute;
-  inset: -6px;
+  inset: 0;
   border-radius: 50%;
-  box-shadow: 0 0 0 calc(3px + var(--lvl) * 16px) rgba(0, 113, 227, calc(0.14 + var(--lvl) * 0.4));
-  transition: box-shadow 0.08s linear;
+  /* soft shadow that swells while the worker speaks */
+  box-shadow:
+    0 calc(14px + var(--lvl) * 14px) calc(28px + var(--lvl) * 36px) calc(-6px + var(--lvl) * 6px)
+      rgba(29, 29, 31, calc(0.22 + var(--lvl) * 0.3));
+  transition: box-shadow 0.35s ease-out;
+}
+.speaker.no-meter .speaker-ring {
+  animation: shadow-breathe 2.4s ease-in-out infinite;
+}
+@keyframes shadow-breathe {
+  0%,
+  100% {
+    box-shadow: 0 14px 28px -6px rgba(29, 29, 31, 0.22);
+  }
+  50% {
+    box-shadow: 0 22px 48px -2px rgba(29, 29, 31, 0.36);
+  }
 }
 .speaker-photo {
   position: relative;
@@ -1087,7 +1102,6 @@ code,
   object-fit: cover;
   object-position: 50% 40%;
   border: 4px solid #fff;
-  box-shadow: 0 16px 36px -16px rgba(29, 29, 31, 0.45);
   background: var(--bg-alt);
 }
 .speaker-initial {
@@ -1096,42 +1110,6 @@ code,
   font-size: 3.4rem;
   font-weight: 700;
   color: var(--accent);
-}
-/* speech bubble with live level bars */
-.speaker-badge {
-  position: absolute;
-  right: -14px;
-  bottom: 6px;
-  width: 58px;
-  height: 46px;
-  border-radius: 18px 18px 18px 6px;
-  background: var(--accent);
-  border: 3px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  box-shadow: 0 8px 20px -8px rgba(0, 113, 227, 0.6);
-}
-.speaker-badge i {
-  display: block;
-  width: 4px;
-  border-radius: 2px;
-  background: #fff;
-  height: calc(5px + var(--lvl) * 22px * var(--f));
-  transition: height 0.08s linear;
-}
-.speaker.no-meter .speaker-badge i {
-  animation: talk 0.9s ease-in-out infinite;
-}
-@keyframes talk {
-  0%,
-  100% {
-    height: 6px;
-  }
-  50% {
-    height: 18px;
-  }
 }
 
 /* Profile overlay (Apple settings-style grouped list) */
