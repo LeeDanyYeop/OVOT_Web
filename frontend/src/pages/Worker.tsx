@@ -284,15 +284,7 @@ export function WorkerPage() {
               disabled={!needsTap}
               aria-label={needsTap ? 'NFC 스캔 시작' : 'NFC 태그 대기 중'}
             >
-              <svg viewBox="0 0 48 48" aria-hidden="true">
-                <path
-                  d="M14 17a14 14 0 0 1 0 14M20.5 12.5a21 21 0 0 1 0 23M27 8a28 28 0 0 1 0 32"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <img className="nfc-mark" src="/nfc-mark.png" alt="" width={96} height={96} />
             </button>
             <h1 className="w-title">{busy ? '등록 중…' : noNfc ? 'NFC를 쓸 수 없는 기기입니다' : 'NFC 태그를 대세요'}</h1>
             <p className="w-sub">

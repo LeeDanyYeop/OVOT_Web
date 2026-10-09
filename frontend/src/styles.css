@@ -397,9 +397,14 @@ code,
 .nfc-orb:disabled {
   opacity: 1;
 }
-.nfc-orb svg {
-  width: 84px;
-  height: 84px;
+.nfc-mark {
+  width: 92px;
+  height: auto;
+  display: block;
+  transition: opacity 0.2s;
+}
+.nfc-orb.is-busy .nfc-mark {
+  opacity: 0.4;
 }
 .nfc-orb::after {
   content: '';
