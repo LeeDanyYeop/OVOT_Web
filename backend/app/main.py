@@ -1,5 +1,6 @@
 import mimetypes
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -61,4 +62,8 @@ if (_dist / "index.html").exists():
         if path and candidate.is_file() and candidate.is_relative_to(_dist.resolve()):
             headers = {"Cache-Control": "no-cache"} if path in ("sw.js", "manifest.webmanifest") else None
             return FileResponse(candidate, headers=headers)
+        # A missing file (icon, image…) must 404, not return the app HTML: phones cache
+        # whatever comes back for icon URLs.
+        if Path(path).suffix:
+            return JSONResponse({"detail": "Not Found"}, status_code=404)
         return FileResponse(_dist / "index.html", headers={"Cache-Control": "no-cache"})
