@@ -265,8 +265,8 @@ export function WorkerPage() {
           </>
         ) : recording ? (
           <>
-            <SpeakingAvatar stream={micStream} photo={`/avatars/${me?.id ?? 'unknown'}.jpg`} name={me?.name ?? ''} />
             {zone && <p className="w-eyebrow">{zone.name}</p>}
+            <SpeakingAvatar stream={micStream} photo={`/avatars/${me?.id ?? 'unknown'}.jpg`} name={me?.name ?? ''} />
             <h1 className="w-title">스트리밍 중</h1>
             <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
