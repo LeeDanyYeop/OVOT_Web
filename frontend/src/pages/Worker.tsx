@@ -21,6 +21,8 @@ const ERROR_TEXT: Record<string, string> = {
 }
 const SAME_TAG_IGNORE_MS = 3000
 const UPLOAD_RETRY_MS = 15_000
+// Audio is sent in short segments so the admin side receives it almost live.
+const STREAM_SEGMENT_MS = 10_000
 
 function vibrate(pattern: number | number[]) {
   try {
@@ -96,7 +98,7 @@ export function WorkerPage() {
   const startRecording = useCallback(async () => {
     if (recorderRef.current?.active) return
     if (!voiceCaptureSupported()) {
-      setNotice({ kind: 'error', text: '이 기기에서는 녹음을 지원하지 않습니다' })
+      setNotice({ kind: 'error', text: '이 기기에서는 스트리밍을 지원하지 않습니다' })
       return
     }
     const rec = new SegmentRecorder(
@@ -106,11 +108,12 @@ export function WorkerPage() {
         void flush()
       },
       () => eventIdRef.current,
+      STREAM_SEGMENT_MS,
     )
     try {
       await rec.start()
     } catch {
-      setNotice({ kind: 'error', text: '마이크를 허용해야 녹음이 시작됩니다' })
+      setNotice({ kind: 'error', text: '마이크를 허용해야 스트리밍이 시작됩니다' })
       return
     }
     recorderRef.current = rec
@@ -131,7 +134,7 @@ export function WorkerPage() {
     setRecording(false)
     void wakeLockRef.current?.release().catch(() => undefined)
     wakeLockRef.current = null
-    setNotice({ kind: 'ok', text: '녹음을 종료했습니다' })
+    setNotice({ kind: 'ok', text: '스트리밍을 종료했습니다' })
   }, [])
 
   useEffect(() => {
@@ -261,14 +264,14 @@ export function WorkerPage() {
             <div className="rec-orb" aria-hidden="true">
               <span />
             </div>
-            <h1 className="w-title">녹음 중</h1>
-            <p className="w-timer" aria-label="녹음 시간">
+            <h1 className="w-title">스트리밍 중</h1>
+            <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
             </p>
             <p className="w-sub">구역을 옮기면 새 구역의 태그만 대세요</p>
             <div className="w-actions">
               <button className="pill pill-light" onClick={stopRecording}>
-                녹음 종료
+                스트리밍 종료
               </button>
             </div>
           </>
@@ -297,7 +300,7 @@ export function WorkerPage() {
                 ? '아래 코드 입력으로 등록하세요'
                 : needsTap
                   ? '가운데를 한 번 눌러 시작하세요'
-                  : '휴대폰 뒷면을 구역 입구 태그에 대면 녹음이 시작됩니다'}
+                  : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
             </p>
             {zone && <p className="w-zone">마지막 등록 · {zone.name} {hhmm(zone.at)}</p>}
           </>

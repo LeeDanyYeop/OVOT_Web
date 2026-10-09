@@ -36,9 +36,9 @@ async def upload_clip(
         raise HTTPException(415, detail={"code": "UNSUPPORTED_MEDIA", "message": "오디오 형식이 아닙니다."})
     body = await request.body()
     if not body:
-        raise HTTPException(400, detail={"code": "EMPTY_CLIP", "message": "빈 녹음입니다."})
+        raise HTTPException(400, detail={"code": "EMPTY_CLIP", "message": "빈 스트리밍입니다."})
     if len(body) > config.MAX_CLIP_BYTES:
-        raise HTTPException(413, detail={"code": "CLIP_TOO_LARGE", "message": "녹음 파일이 너무 큽니다."})
+        raise HTTPException(413, detail={"code": "CLIP_TOO_LARGE", "message": "스트리밍 파일이 너무 큽니다."})
 
     # Attribute the clip to the check-in it was recorded under. The event must belong to
     # this worker, so a client cannot attach audio to someone else's location.
@@ -89,5 +89,5 @@ def list_clips(limit: int = Query(20, ge=1, le=100), db: Session = Depends(get_d
 def clip_audio(clip_id: str, db: Session = Depends(get_db)):
     clip = db.scalar(select(VoiceClip).where(VoiceClip.clip_id == clip_id))
     if clip is None:
-        raise HTTPException(404, detail={"code": "NOT_FOUND", "message": "녹음을 찾을 수 없습니다."})
+        raise HTTPException(404, detail={"code": "NOT_FOUND", "message": "스트리밍을 찾을 수 없습니다."})
     return FileResponse(clip.file_path, media_type=clip.mime_type)
