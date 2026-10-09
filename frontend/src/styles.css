@@ -1,4 +1,4 @@
-/* OVOT — clean, light, Apple-like. Brown is used only as the accent. */
+/* OVOT — clean, light, Apple-like. Blue (matching the app icon) is the only accent. */
 :root {
   --bg: #ffffff;
   --bg-alt: #f5f5f7;
@@ -8,9 +8,9 @@
   --hairline: #e8e8ed;
   --text: #1d1d1f;
   --muted: #6e6e73;
-  --accent: #8b5a2b;
-  --accent-strong: #6f4520;
-  --accent-soft: #f6efe7;
+  --accent: #0071e3;
+  --accent-strong: #0058b0;
+  --accent-soft: #e8f1fd;
   --accent-ink: #ffffff;
   --ok: #1d7a45;
   --ok-bg: #eaf6ef;
@@ -66,7 +66,7 @@ code,
   font-size: 0.85rem;
 }
 :focus-visible {
-  outline: 3px solid rgba(139, 90, 43, 0.45);
+  outline: 3px solid rgba(0, 113, 227, 0.45);
   outline-offset: 2px;
 }
 .splash {
@@ -165,7 +165,7 @@ code,
   color: var(--accent-strong);
 }
 .btn-secondary:hover:not(:disabled) {
-  background: #efe3d4;
+  background: #d3e5fb;
 }
 .btn-ghost {
   background: transparent;
@@ -212,7 +212,7 @@ code,
 .search:focus {
   border-color: var(--accent);
   outline: none;
-  box-shadow: 0 0 0 4px rgba(139, 90, 43, 0.12);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
 }
 .field-error {
   color: var(--danger);
@@ -406,7 +406,7 @@ code,
   position: absolute;
   inset: -10px;
   border-radius: 50%;
-  border: 1.5px solid rgba(139, 90, 43, 0.35);
+  border: 1.5px solid rgba(0, 113, 227, 0.35);
   opacity: 0;
 }
 .nfc-orb.is-listening::after {
@@ -841,7 +841,7 @@ code,
 }
 @keyframes flash {
   0% {
-    background: #efe3d4;
+    background: #d3e5fb;
   }
   100% {
     background: var(--bg-alt);
