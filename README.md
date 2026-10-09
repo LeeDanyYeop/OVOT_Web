@@ -14,63 +14,55 @@ OVOT(One Voice, One Team) 1단계 MVP입니다. **작업자 신원(로그인 세
 
 ```
 ovot-web/
-├─ backend/            FastAPI + SQLAlchemy + SQLite
+├─ backend/             FastAPI + SQLAlchemy + SQLite
 │  ├─ app/
-│  │  ├─ main.py               앱, 라우터, 빌드된 PWA 정적 서빙
-│  │  ├─ models.py             workers, zones, nfc_tags, location_events, worker_current_locations …
-│  │  ├─ services/location.py  체크인 처리(중복 방지, 사건 추가, 현재 위치 갱신)
-│  │  ├─ services/tag_verifier.py  태그 검증 인터페이스 (보안 태그로 교체 가능)
-│  │  ├─ services/event_hub.py WebSocket 이벤트 허브
-│  │  ├─ routers/              auth, location, admin, ws
-│  │  └─ seed.py               시연 데이터
-│  ├─ tests/                   API·흐름 테스트 (pytest)
-│  └─ run.py                   서버 실행 (기본 포트 8100)
-├─ frontend/           React + TypeScript + Vite PWA
+│  │  ├─ main.py                  앱, 라우터, 빌드된 PWA 정적 서빙
+│  │  ├─ models.py                workers, zones, nfc_tags, location_events, voice_clips …
+│  │  ├─ services/location.py     체크인 처리(중복 방지, 사건 추가, 현재 위치 갱신)
+│  │  ├─ services/tag_verifier.py 태그 검증 인터페이스 (보안 태그로 교체 가능)
+│  │  ├─ services/event_hub.py    WebSocket 이벤트 허브
+│  │  ├─ routers/                 auth, location, admin, voice, ws, client_log
+│  │  └─ seed.py                  시연 데이터
+│  ├─ tests/                      API·흐름 테스트 (pytest)
+│  └─ run.py                      서버 실행 (기본 포트 8100, 클라우드는 PORT)
+├─ frontend/            React + TypeScript + Vite PWA
+│  ├─ public/
+│  │  ├─ app-icon/                앱·탭 아이콘
+│  │  ├─ avatars/                 작업자 사진 (W-001.jpg …)
+│  │  ├─ logo.png, nfc-mark.png   상단 로고, NFC 마크
+│  │  └─ manifest.webmanifest, sw.js
 │  └─ src/
-│     ├─ pages/Worker.tsx      작업자(모바일) 화면
-│     ├─ pages/Admin.tsx       관리자 실시간 대시보드
-│     ├─ pages/Tags.tsx        태그 QR 인쇄 · NFC 태그 기록
-│     ├─ scan/nfc.ts           Web NFC (NDEFReader) 읽기/쓰기
-│     ├─ scan/qr.ts            카메라 QR (BarcodeDetector → jsQR 대체)
-│     └─ capture/voiceCapture.ts  MediaRecorder 확장 지점(다음 단계, 미연결)
-├─ Dockerfile, docker-compose.yml
+│     ├─ pages/                   Worker(작업자), Admin(관제), Tags(태그 관리)
+│     ├─ components/              SpeakingAvatar, ProfileSheet, CodeEntrySheet …
+│     ├─ scan/                    Web NFC, QR
+│     └─ capture/                 음성 스트리밍(MediaRecorder)
+├─ design/              원본 디자인 파일 (로고, 앱 아이콘, NFC 마크, 사진)
+├─ scripts/             start.ps1, test.ps1, reset-demo.ps1
+├─ .claude/launch.json  Claude 미리보기용 실행 설정
+├─ Dockerfile, render.yaml, docker-compose.yml
 └─ README.md
 ```
 
 ## 실행
 
-요구사항: Python 3.11+, Node 20+.
+요구사항: Python 3.11+, Node.js 20+ (둘 다 PATH에 있어야 합니다).
 
-```bash
-# 1) 백엔드 의존성
-cd ovot-web/backend
-pip install -r requirements.txt
-
-# 2) 프런트엔드 빌드 (백엔드가 dist를 같이 서빙)
-cd ../frontend
-npm install
-npm run build
-
-# 3) 서버 실행 → http://localhost:8100
-cd ../backend
-python run.py
+```powershell
+# ovot-web 폴더에서 (Windows PowerShell)
+powershell -ExecutionPolicy Bypass -File scripts/start.ps1        # 빌드 + 서버 → http://localhost:8100
+powershell -ExecutionPolicy Bypass -File scripts/test.ps1         # 자동 시험
+powershell -ExecutionPolicy Bypass -File scripts/reset-demo.ps1   # 로컬 시연 데이터 초기화
 ```
 
-첫 실행 시 `backend/data/ovot.db`가 만들어지고 시연 데이터가 자동으로 들어갑니다.
-시연 전 초기화:
+직접 실행할 때:
 
 ```bash
-cd ovot-web/backend
-python -m app.seed --reset
+cd frontend && npm ci && npm run build      # PWA 빌드 (백엔드가 dist를 같이 서빙)
+cd ../backend && pip install -r requirements.txt && python run.py
 ```
 
-프런트엔드 개발 모드(HMR): 백엔드를 띄운 상태에서 `cd frontend && npm run dev` → http://localhost:5173
-(`/api`, `/ws`는 8100으로 프록시).
-
-> 이 PC에서는 시스템 PATH에 Node가 없어 conda 환경의 Node를 사용했습니다:
-> `export PATH="/c/Users/onyu/anaconda3/envs/claude:$PATH"` (Git Bash)
-
-Docker: `docker compose up --build` → http://localhost:8100 (DB는 `ovot-data` 볼륨).
+프런트엔드 개발 모드(HMR): 서버를 띄운 상태에서 `cd frontend && npm run dev` → http://localhost:5173
+(`/api`, `/ws`는 8100으로 프록시). Docker: `docker compose up --build`.
 
 ## 작업자 화면 (2가지 상태만)
 

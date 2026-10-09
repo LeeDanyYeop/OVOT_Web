@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ovot-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["backend/run.py"],
+      "port": 8100
+    }
+  ]
+}

@@ -26,7 +26,7 @@ export function InstallBanner() {
 
   return (
     <section className="install-banner" aria-label="앱 설치">
-      <img src="/app-icons-2/icon-192.png" alt="" width={44} height={44} />
+      <img src="/app-icon/icon-192.png" alt="" width={44} height={44} />
       <div className="install-text">
         <strong>OVOT 앱 설치</strong>
         <span>
