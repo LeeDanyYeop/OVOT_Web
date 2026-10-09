@@ -141,7 +141,7 @@ export function WorkerPage() {
     setRecording(false)
     void wakeLockRef.current?.release().catch(() => undefined)
     wakeLockRef.current = null
-    setNotice({ kind: 'ok', text: '스트리밍을 종료했습니다' })
+    setNotice(null)
   }, [])
 
   useEffect(() => {
@@ -309,7 +309,6 @@ export function WorkerPage() {
                   ? '가운데를 한 번 눌러 시작하세요'
                   : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
             </p>
-            {zone && <p className="w-zone">마지막 등록 · {zone.name} {hhmm(zone.at)}</p>}
           </>
         )}
 
