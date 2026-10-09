@@ -304,7 +304,7 @@ code,
   font-size: 0.95rem;
 }
 .w .install-banner {
-  margin: 0 20px;
+  margin: 16px 20px 0;
 }
 .w-stage {
   flex: 1;
