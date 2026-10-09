@@ -357,11 +357,21 @@ code,
   font-weight: 600;
   font-size: 0.98rem;
 }
+.w-eyebrow {
+  margin-top: 10px;
+  margin-bottom: -6px;
+  font-size: 1.06rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
 .w-timer {
-  font-size: 1.6rem;
-  font-weight: 500;
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: var(--text);
+  color: var(--muted);
+  margin-top: -4px;
 }
 .w-actions {
   display: flex;

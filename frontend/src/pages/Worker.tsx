@@ -8,7 +8,6 @@ import { SpeakingAvatar } from '../components/SpeakingAvatar'
 import { ApiError, api } from '../lib/api'
 import { unlockAudio } from '../lib/audio'
 import { useAuth } from '../lib/auth'
-import { hhmm } from '../lib/format'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
 import { extractTagCode } from '../scan/tagCode'
 import type { CheckInSource } from '../types'
@@ -266,12 +265,8 @@ export function WorkerPage() {
           </>
         ) : recording ? (
           <>
-            {zone && (
-              <p className="w-zone">
-                {zone.name} · {hhmm(zone.at)} 등록
-              </p>
-            )}
             <SpeakingAvatar stream={micStream} photo={`/avatars/${me?.id ?? 'unknown'}.jpg`} name={me?.name ?? ''} />
+            {zone && <p className="w-eyebrow">{zone.name}</p>}
             <h1 className="w-title">스트리밍 중</h1>
             <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
