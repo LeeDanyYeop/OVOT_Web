@@ -2174,3 +2174,71 @@ html.no-scroll body {
   background: var(--text);
   color: #fff;
 }
+/* scrollbars must not eat into the right edge (keeps left/right margins equal) */
+.assist-sheet,
+.mini-bubble,
+.profile {
+  scrollbar-width: none;
+}
+.assist-sheet::-webkit-scrollbar,
+.mini-bubble::-webkit-scrollbar,
+.profile::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- 오봇 buttons: sized to their label (no wrapping), rows still fill the width,
+        white with a soft shadow ---- */
+.assist-quick,
+.assist-actions,
+.mini-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.assist-quick > button,
+.assist-actions > button,
+.mini-actions > button {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+.assist-sheet .assist-chip,
+.mini-bubble .assist-chip,
+.assist-btn {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 0.95rem;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.08);
+}
+.assist-sheet .assist-chip:hover:not(:disabled),
+.mini-bubble .assist-chip:hover:not(:disabled),
+.assist-btn:hover {
+  background: #f7f7f9;
+}
+.assist-sheet .assist-chip.is-primary,
+.mini-bubble .assist-chip.is-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 16px -6px rgba(0, 113, 227, 0.6);
+}
+.assist-btn {
+  min-height: 46px;
+}
+.assist-btn.is-dark {
+  background: var(--text);
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.45);
+}
+.assist-btn.is-dark:hover {
+  background: #000;
+}
+/* room for the shadows inside the scrolling sheet */
+.assist-actions,
+.assist-quick {
+  padding: 2px 0 6px;
+}
+.assist-sheet .assist-chip,
+.mini-bubble .assist-chip {
+  padding: 0 12px;
+}
