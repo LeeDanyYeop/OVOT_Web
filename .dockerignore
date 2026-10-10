@@ -4,3 +4,4 @@ backend/data
 **/__pycache__
 **/.pytest_cache
 design
+backend/.env
