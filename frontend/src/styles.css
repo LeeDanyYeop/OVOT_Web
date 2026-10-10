@@ -2299,17 +2299,65 @@ html.no-scroll body {
   min-height: 40px;
 }
 
-/* while an answer is on screen, make room for it */
-.w-stage.has-answer {
-  --speaker: clamp(64px, 14cqh, 120px);
-  gap: clamp(4px, 1.1cqh, 10px);
+
+/* the answer floats below the button without moving anything else */
+.w-actions-stack {
+  position: relative;
 }
-.w-stage.has-answer .w-title {
-  font-size: clamp(1.4rem, 5.6cqh, 2.4rem);
+.assist-inline {
+  --card-w: min(440px, calc(100cqw - 32px));
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 10px);
+  left: 50%;
+  width: var(--card-w);
+  margin: 0 0 0 calc(var(--card-w) / -2);
+  max-height: 40dvh;
 }
-.w-stage.has-answer .w-timer {
-  font-size: clamp(1.1rem, 4cqh, 1.6rem);
+
+/* compact answer card that fits the gap between the button and the footer link */
+.assist-inline {
+  top: calc(100% + 8px);
+  max-height: none;
+  padding: 10px 14px;
+  gap: 4px;
+  border-radius: 16px;
 }
-.w-stage.has-answer .w-actions {
+.assist-inline .mini-headline {
+  font-size: 0.98rem;
+  line-height: 1.38;
+}
+.assist-inline .assist-details {
+  gap: 2px;
+  font-size: 0.9rem;
+}
+.assist-inline .assist-quote {
+  font-size: 0.85rem;
+}
+.assist-inline .mini-x {
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+}
+.assist-inline .mini-actions {
   margin-top: 4px;
+}
+.assist-inline .assist-chip {
+  min-height: 36px;
+  font-size: 0.88rem;
+}
+
+/* reserved answer area under the 오봇 button; the card fills it and scrolls inside */
+.w-answer-slot {
+  position: relative;
+  flex: none;
+  width: min(440px, 100%);
+  height: clamp(76px, 16cqh, 150px);
+}
+.w-answer-slot .assist-inline {
+  position: static;
+  width: 100%;
+  margin: 0;
+  max-height: 100%;
 }

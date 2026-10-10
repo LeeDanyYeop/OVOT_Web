@@ -202,7 +202,7 @@ export function AssistSheet({ assist, onClose: close }: Props) {
             </button>
             {talk !== 'idle' && (
               <p className="assist-mic-label">
-                {talk === 'listening' ? '듣고 있어요 · 손을 떼거나 다시 누르면 질문해요' : '오봇이 확인하고 있어요…'}
+                {talk === 'listening' ? '듣고 있어요 · 다시 누르면 질문해요' : '오봇이 확인하고 있어요…'}
               </p>
             )}
           </section>

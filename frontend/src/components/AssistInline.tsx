@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Assist } from '../lib/useAssist'
 import type { AssistCard } from '../types'
 
@@ -27,10 +27,19 @@ function useTypewriter(text: string, key: number) {
   return { typed: text.slice(0, n), done: n >= text.length }
 }
 
-function TypedAnswer({ card, onDone }: { card: AssistCard; onDone: (done: boolean) => void }) {
+function TypedAnswer({
+  card,
+  onDone,
+  onType,
+}: {
+  card: AssistCard
+  onDone: (done: boolean) => void
+  onType: () => void
+}) {
   const full = [card.headline, ...card.details].join('\n')
   const { typed, done } = useTypewriter(full, card.log_id)
   useEffect(() => onDone(done), [done, onDone])
+  useEffect(onType, [typed, onType])
   const [head, ...rest] = typed.split('\n')
   return (
     <div className="mini-answer" aria-live="polite">
@@ -62,11 +71,18 @@ interface Props {
 export function AssistInline({ assist, onExpand }: Props) {
   const { talk, card, error, escalatedTo } = assist
   const [typedDone, setTypedDone] = useState(false)
+  const boxRef = useRef<HTMLElement>(null)
+  // keep the latest typed line in view
+  const followTyping = useCallback(() => {
+    const el = boxRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [])
+
 
   if (talk === 'listening') return null // the button itself shows the listening state
   if (talk === 'thinking') {
     return (
-      <section className="assist-inline is-status" aria-live="polite">
+      <section className="assist-inline is-status" ref={boxRef} aria-live="polite">
         <p className="mini-status">
           오봇이 확인하고 있어요<span className="mini-dots" aria-hidden="true" />
         </p>
@@ -75,7 +91,7 @@ export function AssistInline({ assist, onExpand }: Props) {
   }
   if (error && !card) {
     return (
-      <section className="assist-inline is-status" aria-live="polite">
+      <section className="assist-inline is-status" ref={boxRef} aria-live="polite">
         <p className="mini-status is-error">{error}</p>
       </section>
     )
@@ -83,7 +99,7 @@ export function AssistInline({ assist, onExpand }: Props) {
   if (!card) return null
 
   return (
-    <section className="assist-inline" aria-label="오봇 답변">
+    <section className="assist-inline" ref={boxRef} aria-label="오봇 답변">
       <button className="mini-x" onClick={assist.clearCard} aria-label="답변 닫기">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M7 7l10 10M17 7L7 17" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
@@ -91,7 +107,7 @@ export function AssistInline({ assist, onExpand }: Props) {
       </button>
       {card.question && <p className="assist-quote">“{card.question}”</p>}
       {card.needs_supervisor && <span className="assist-flag">담당자 확인 필요</span>}
-      <TypedAnswer card={card} onDone={setTypedDone} />
+      <TypedAnswer card={card} onDone={setTypedDone} onType={followTyping} />
       {typedDone && (card.figure || card.owner) && (
         <div className="mini-actions">
           {card.figure && (

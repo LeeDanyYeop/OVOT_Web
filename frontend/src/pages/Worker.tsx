@@ -318,7 +318,7 @@ export function WorkerPage() {
 
       {!recording && <InstallBanner />}
 
-      <main className={`w-stage ${recording && (assist.card || assist.talk !== 'idle' || assist.error) ? 'has-answer' : ''}`} aria-live="polite">
+      <main className="w-stage" aria-live="polite">
         {pendingTag ? (
           <>
             <h1 className="w-title">위치를 등록할까요?</h1>
@@ -366,16 +366,14 @@ export function WorkerPage() {
             <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
             </p>
-            {assist.talk === 'idle' && !assist.card && !assist.error && (
-              <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
-            )}
+            <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
             <div className="w-actions w-actions-stack">
-              {/* push-to-talk: hold, speak, release (or tap, speak, tap again) */}
+              {/* tap to start talking, tap again to send the question */}
               <button
                 className={`pill pill-dark pill-ask is-${assist.talk}`}
                 {...assist.press}
                 disabled={assist.talk === 'thinking'}
-                aria-label="오봇에게 물어보기 · 누른 채 말하고 떼면 질문"
+                aria-label="오봇에게 물어보기 · 누르고 말한 뒤 다시 누르면 질문"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
@@ -387,13 +385,16 @@ export function WorkerPage() {
                   />
                 </svg>
                 {assist.talk === 'listening'
-                  ? '듣고 있어요 · 떼면 질문'
+                  ? '듣고 있어요 · 다시 누르면 질문'
                   : assist.talk === 'thinking'
                     ? '오봇이 확인 중…'
                     : '오봇에게 물어보기'}
               </button>
             </div>
-            <AssistInline assist={assist} onExpand={() => setAssistMode('open')} />
+            {/* fixed answer area under the button: reserved up front so nothing moves */}
+            <div className="w-answer-slot">
+              <AssistInline assist={assist} onExpand={() => setAssistMode('open')} />
+            </div>
           </>
         ) : (
           <>

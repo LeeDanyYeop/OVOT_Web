@@ -6,7 +6,6 @@ import type { AssistCard } from '../types'
 export type Talk = 'idle' | 'listening' | 'thinking'
 export type QuickKind = 'next' | 'tools' | 'cautions'
 
-const HOLD_MS = 450 // shorter press = tap mode (tap again to send), for gloved hands
 const MIN_QUESTION_MS = 700
 
 /**
@@ -20,7 +19,6 @@ export function useAssist(stream: MediaStream | null) {
   const [error, setError] = useState<string | null>(null)
   const [escalatedTo, setEscalatedTo] = useState<string | null>(null)
   const captureRef = useRef<QuestionCapture | null>(null)
-  const pressedAt = useRef(0)
   const talkRef = useRef<Talk>('idle')
   talkRef.current = talk
 
@@ -83,22 +81,11 @@ export function useAssist(stream: MediaStream | null) {
     }
   }
 
-  const onPressStart = () => {
+  // Tap once to start listening, tap again to send the question.
+  const toggleListening = () => {
     if (talkRef.current === 'thinking') return
-    if (talkRef.current === 'listening') {
-      void finishListening() // tap mode: second tap sends
-      return
-    }
-    pressedAt.current = Date.now()
-    beginListening()
-  }
-  const onPressEnd = () => {
-    if (talkRef.current === 'listening' && pressedAt.current && Date.now() - pressedAt.current >= HOLD_MS) {
-      pressedAt.current = 0
-      void finishListening() // hold mode: release sends
-    } else {
-      pressedAt.current = 0 // short tap: keep listening until the next tap
-    }
+    if (talkRef.current === 'listening') void finishListening()
+    else beginListening()
   }
 
   const escalate = async () => {
@@ -130,13 +117,7 @@ export function useAssist(stream: MediaStream | null) {
     reset,
     clearCard: () => setCard(null),
     /** Spread onto the mic button. */
-    press: {
-      onPointerDown: onPressStart,
-      onPointerUp: onPressEnd,
-      onPointerLeave: onPressEnd,
-      onPointerCancel: onPressEnd,
-      onContextMenu: (e: { preventDefault: () => void }) => e.preventDefault(),
-    },
+    press: { onClick: toggleListening },
   }
 }
 
