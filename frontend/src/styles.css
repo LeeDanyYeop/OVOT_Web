@@ -1825,9 +1825,8 @@ html.no-scroll body {
   will-change: transform;
 }
 
-/* Sky that follows the time of day. Painted on a layer that overshoots the bottom edge:
-   iOS home-screen apps with a translucent status bar shift the page up but leave a
-   status-bar-high gap at the bottom; the overshoot fills it with sky instead of black. */
+/* Sky that follows the time of day, exactly screen-sized so its bottom colour matches the
+   page canvas (set from Worker.tsx) and no seam shows below it. */
 .w::before {
   content: '';
   position: fixed;
@@ -1835,7 +1834,7 @@ html.no-scroll body {
   left: 0;
   right: 0;
   top: 0;
-  bottom: calc(-1 * env(safe-area-inset-top) - 40px);
+  bottom: 0;
   background:
     radial-gradient(circle at var(--glow-x) var(--glow-y), var(--glow) 0, transparent 34%),
     linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
@@ -1845,7 +1844,6 @@ html.no-scroll body {
 
 /* ---- iOS home-screen fixes ---- */
 /* stretch full-screen layers over the bottom gap (see measureIosGap in main.tsx) */
-.w,
 .profile,
 .qr-full,
 .assist-backdrop {
