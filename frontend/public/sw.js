@@ -2,7 +2,7 @@
 // never cached, so location data always comes from the server. The shell (HTML + hashed
 // JS/CSS) is precached so the installed app always opens and can show its reconnect
 // screen even when the server or tunnel is unreachable.
-const CACHE = 'ovot-shell-v18'
+const CACHE = 'ovot-shell-v19'
 const STATIC = ['/logo.png', '/nfc-mark.png', '/manifest.webmanifest', '/app-icon/icon-192.png', '/app-icon/icon-512.png', '/app-icon/favicon-32.png', '/app-icon/favicon-64.png']
 
 async function precache() {

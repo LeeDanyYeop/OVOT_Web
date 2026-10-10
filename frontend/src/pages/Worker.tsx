@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../capture/voiceCapture'
-import { CodeEntrySheet } from '../components/CodeEntrySheet'
+import { QrScanSheet } from '../components/QrScanSheet'
 import { InstallBanner } from '../components/InstallBanner'
 import { ProfileSheet } from '../components/ProfileSheet'
 import { SpeakingAvatar } from '../components/SpeakingAvatar'
@@ -299,7 +299,7 @@ export function WorkerPage() {
             <h1 className="w-title">{busy ? '등록 중…' : noNfc ? 'NFC를 쓸 수 없는 기기입니다' : 'NFC 태그를 대세요'}</h1>
             <p className="w-sub">
               {noNfc
-                ? '아래 코드 입력으로 등록하세요'
+                ? '아래 QR로 등록하세요'
                 : needsTap
                   ? '가운데를 한 번 눌러 시작하세요'
                   : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
@@ -313,12 +313,12 @@ export function WorkerPage() {
 
       <footer className="w-foot">
         <button className={noNfc ? 'pill pill-dark' : 'w-link'} onClick={() => setSheetOpen(true)} disabled={busy}>
-          {noNfc ? '코드로 등록' : '태그가 안 되나요? 코드로 등록'}
+          {noNfc ? 'QR로 등록' : '태그가 안 되나요? QR로 등록'}
         </button>
       </footer>
 
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
-      {sheetOpen && <CodeEntrySheet onSubmit={(c, s) => void submit(c, s)} onClose={() => setSheetOpen(false)} />}
+      {sheetOpen && <QrScanSheet onScan={(c) => void submit(c, 'qr')} onClose={() => setSheetOpen(false)} />}
     </div>
   )
 }
