@@ -166,6 +166,12 @@ export function WorkerPage() {
     return () => window.clearTimeout(t)
   }, [offInfo])
 
+  // The worker view is a single fixed screen: lock page scroll / iOS rubber-band while it is open.
+  useEffect(() => {
+    document.documentElement.classList.add('no-scroll')
+    return () => document.documentElement.classList.remove('no-scroll')
+  }, [])
+
   // Lunch and after-work: stop streaming automatically.
   useEffect(() => {
     if (!recording) return
@@ -285,7 +291,7 @@ export function WorkerPage() {
         )}
       </header>
 
-      <InstallBanner />
+      {!recording && <InstallBanner />}
 
       <main className="w-stage" aria-live="polite">
         {pendingTag ? (

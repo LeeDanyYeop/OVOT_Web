@@ -7,7 +7,7 @@ export function InstallBanner() {
   const { mode, install } = useInstallPrompt()
   const [dismissed, setDismissed] = useState(() => {
     try {
-      return sessionStorage.getItem(DISMISS_KEY) === '1'
+      return localStorage.getItem(DISMISS_KEY) === '1'
     } catch {
       return false
     }
@@ -18,7 +18,7 @@ export function InstallBanner() {
   const dismiss = () => {
     setDismissed(true)
     try {
-      sessionStorage.setItem(DISMISS_KEY, '1')
+      localStorage.setItem(DISMISS_KEY, '1')
     } catch {
       /* storage unavailable */
     }

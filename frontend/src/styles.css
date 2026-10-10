@@ -276,17 +276,22 @@ code,
   --glow: rgba(255, 248, 225, 0.75);
   --glow-x: 50%;
   --glow-y: 20%;
-  min-height: 100dvh;
+  /* pinned to the screen: the worker view never scrolls */
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   display: flex;
   flex-direction: column;
   /* sky that follows the time of day: sun/moon glow over a vertical gradient */
   background:
     radial-gradient(circle at var(--glow-x) var(--glow-y), var(--glow) 0, transparent 34%),
     linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
-  background-attachment: fixed;
   transition: background 2s ease;
   animation: sky-in 0.9s ease-out;
   padding: 0 0 env(safe-area-inset-bottom);
+  --orb: clamp(128px, 24dvh, 196px);
+  --speaker: clamp(116px, 20dvh, 156px);
 }
 .w-head {
   display: flex;
@@ -421,11 +426,12 @@ code,
 /* NFC orb */
 .nfc-orb {
   position: relative;
-  width: 196px;
-  height: 196px;
+  width: var(--orb);
+  height: var(--orb);
+  flex: none;
   border-radius: 50%;
   border: 0;
-  margin-bottom: 18px;
+  margin-bottom: clamp(4px, 2dvh, 18px);
   display: grid;
   place-items: center;
   color: var(--accent);
@@ -1149,9 +1155,10 @@ code,
 .speaker {
   --lvl: 0;
   position: relative;
-  width: 156px;
-  height: 156px;
-  margin: 22px 0 14px;
+  width: var(--speaker);
+  height: var(--speaker);
+  flex: none;
+  margin: clamp(8px, 2.4dvh, 22px) 0 clamp(6px, 1.6dvh, 14px);
 }
 .speaker-ring {
   position: absolute;
@@ -1178,8 +1185,8 @@ code,
 .speaker-photo {
   position: relative;
   display: block;
-  width: 156px;
-  height: 156px;
+  width: var(--speaker);
+  height: var(--speaker);
   border-radius: 50%;
   object-fit: cover;
   object-position: 50% 40%;
@@ -1746,4 +1753,65 @@ code,
 .assist-log .badge {
   align-self: flex-start;
   margin-top: 4px;
+}
+
+/* black canvas everywhere (status bar area, Safari bars, overscroll) */
+body {
+  background: #000;
+}
+html.no-scroll,
+html.no-scroll body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.nfc-mark {
+  width: calc(var(--orb) * 0.47);
+}
+.w-stage {
+  min-height: 0;
+}
+.w-title {
+  font-size: clamp(1.9rem, min(9vw, 5.4dvh), 3.2rem);
+}
+/* short screens (iPhone SE, Safari with toolbars) */
+@media (max-height: 740px) {
+  .w-stage {
+    gap: 8px;
+    padding: 10px 24px 12px;
+  }
+  .w-actions {
+    margin-top: 8px;
+  }
+  .w-foot {
+    padding: 6px 24px 14px;
+  }
+  .w-sub,
+  .w-cheer {
+    font-size: 0.95rem;
+  }
+  .w .install-banner {
+    margin-top: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .w .install-banner img {
+    width: 36px;
+    height: 36px;
+  }
+  .w .pill {
+    min-height: 48px;
+  }
+  .w-actions-stack {
+    gap: 8px;
+  }
+  .w-timer {
+    font-size: 1.6rem;
+  }
+}
+/* very short screens (4-inch phones): drop the encouragement line so everything fits */
+@media (max-height: 600px) {
+  .w-cheer {
+    display: none;
+  }
 }
