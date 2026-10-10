@@ -263,6 +263,22 @@ export function WorkerPage() {
 
   const sky = useSky()
   const offNow = offHoursReason(sky.hour)
+
+  // The page canvas shows through any strip the OS leaves uncovered (iOS home-screen apps
+  // leave one at the bottom). Paint it the colour of whatever is at the bottom of the screen.
+  const canvasColor = sheetOpen ? '#000000' : profileOpen ? '#f5f5f7' : assistOpen ? '#ffffff' : sky.bottom
+  useEffect(() => {
+    const html = document.documentElement
+    html.style.backgroundColor = canvasColor
+    document.body.style.backgroundColor = canvasColor
+  }, [canvasColor])
+  useEffect(
+    () => () => {
+      document.documentElement.style.backgroundColor = ''
+      document.body.style.backgroundColor = ''
+    },
+    [],
+  )
   const needsTap = nfcState === 'idle' || nfcState === 'error'
   const noNfc = nfcState === 'unsupported' || nfcState === 'insecure'
 
