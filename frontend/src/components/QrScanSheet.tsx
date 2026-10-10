@@ -7,9 +7,11 @@ interface Props {
   onClose: () => void
 }
 
-/** Fallback for iPhone / NFC-less phones: scan the zone's QR code with the camera. */
+type ScanState = 'starting' | 'scanning' | 'found' | 'error'
+
+/** Full-screen camera scanner (iOS Code Scanner style) for NFC-less phones. */
 export function QrScanSheet({ onScan, onClose }: Props) {
-  const [state, setState] = useState<'starting' | 'scanning' | 'error'>('starting')
+  const [state, setState] = useState<ScanState>('starting')
   const [error, setError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -26,23 +28,30 @@ export function QrScanSheet({ onScan, onClose }: Props) {
         videoRef.current!,
         (text) => {
           const code = extractTagCode(text)
-          if (code) {
-            onScan(code)
-          } else {
+          if (!code) {
             setState('error')
-            setError('OVOT 태그 QR이 아닙니다. 구역 입구의 QR을 비추세요.')
+            setError('OVOT 구역 QR이 아닙니다')
+            return
           }
+          setState('found')
+          try {
+            navigator.vibrate?.(60)
+          } catch {
+            /* unsupported */
+          }
+          // Let the green frame register before the sheet closes.
+          window.setTimeout(() => onScan(code), 350)
         },
         ctrl.signal,
       )
-      if (!ctrl.signal.aborted) setState('scanning')
+      if (!ctrl.signal.aborted) setState((s) => (s === 'starting' ? 'scanning' : s))
     } catch {
       setState('error')
-      setError('카메라를 사용할 수 없습니다. 브라우저에서 카메라 권한을 허용하세요.')
+      setError('카메라를 사용할 수 없습니다')
     }
   }, [onScan])
 
-  // The sheet is opened by a tap, so the camera can start right away.
+  // Opened by a tap, so the camera may start right away.
   useEffect(() => {
     if (canUseCamera) void start()
     return () => abortRef.current?.abort()
@@ -54,38 +63,54 @@ export function QrScanSheet({ onScan, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  return (
-    <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" onClick={(e) => e.stopPropagation()}>
-        <div className="sheet-head">
-          <h2 id="sheet-title">QR로 등록</h2>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            닫기
-          </button>
-        </div>
+  const showFrame = canUseCamera && state !== 'error'
 
-        {canUseCamera ? (
-          <section className="stack">
-            <div className={`qr-view ${state === 'scanning' ? 'on' : ''}`}>
-              <video ref={videoRef} muted playsInline />
-              {state !== 'scanning' && (
-                <p className="qr-placeholder">{state === 'starting' ? '카메라를 켜는 중…' : '구역 입구의 OVOT QR 코드를 비추세요'}</p>
-              )}
-            </div>
-            {state === 'scanning' && <p className="muted qr-hint">구역 입구의 OVOT QR 코드를 화면 안에 맞추세요</p>}
-            {error && (
-              <>
-                <p className="alert alert-error" role="alert">
-                  {error}
-                </p>
-                <button className="btn btn-secondary btn-lg" onClick={() => void start()}>
-                  다시 시도
-                </button>
-              </>
-            )}
-          </section>
+  return (
+    <div className={`qr-full is-${canUseCamera ? state : 'error'}`} role="dialog" aria-modal="true" aria-label="QR로 등록">
+      {canUseCamera && <video ref={videoRef} className="qr-video" muted playsInline />}
+
+      <header className="qr-top">
+        <span className="qr-title">QR로 등록</span>
+        <button className="qr-close" onClick={onClose} aria-label="닫기">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      {showFrame && (
+        <div className="qr-frame" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+      )}
+
+      <div className="qr-bottom" aria-live="polite">
+        {!canUseCamera ? (
+          <>
+            <p className="qr-msg">카메라를 쓸 수 없습니다</p>
+            <p className="qr-sub">QR 스캔은 HTTPS로 접속했을 때만 가능합니다</p>
+          </>
+        ) : state === 'error' ? (
+          <>
+            <p className="qr-msg">{error}</p>
+            <p className="qr-sub">
+              {error === '카메라를 사용할 수 없습니다'
+                ? '브라우저 설정에서 카메라 권한을 허용하세요'
+                : '구역 입구의 OVOT QR을 비추세요'}
+            </p>
+            <button className="pill pill-white" onClick={() => void start()}>
+              다시 시도
+            </button>
+          </>
+        ) : state === 'found' ? (
+          <p className="qr-msg">인식했습니다</p>
+        ) : state === 'starting' ? (
+          <p className="qr-sub">카메라를 켜는 중…</p>
         ) : (
-          <p className="alert alert-info">QR 스캔은 HTTPS로 접속했을 때만 카메라를 쓸 수 있습니다.</p>
+          <p className="qr-msg">구역 입구의 QR 코드를 프레임 안에 맞추세요</p>
         )}
       </div>
     </div>

@@ -524,73 +524,164 @@ code,
   cursor: pointer;
 }
 
-/* bottom sheet (code / QR entry) */
-.sheet-backdrop {
+/* Full-screen QR scanner (iOS Code Scanner style) */
+.qr-full {
   position: fixed;
   inset: 0;
-  z-index: 40;
-  background: rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-.sheet {
-  width: 100%;
-  max-width: 560px;
-  max-height: 92dvh;
-  overflow-y: auto;
-  background: var(--bg);
-  border-radius: 24px 24px 0 0;
-  padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-@media (min-width: 700px) {
-  .sheet-backdrop {
-    align-items: center;
-  }
-  .sheet {
-    border-radius: 24px;
-  }
-}
-.sheet-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.sheet-head h2 {
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-.qr-view {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  background: var(--bg-alt);
-  border-radius: 16px;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-}
-.qr-view.on {
+  z-index: 70;
   background: #000;
+  color: #f5f5f7;
+  overflow: hidden;
+  animation: qr-in 0.22s ease-out;
 }
-.qr-view video {
+@keyframes qr-in {
+  from {
+    opacity: 0;
+  }
+}
+.qr-video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.qr-placeholder {
-  position: relative;
-  color: var(--muted);
-  padding: 16px;
+.qr-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
 }
-.qr-hint {
+.qr-title {
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.qr-close {
+  position: absolute;
+  right: 14px;
+  top: calc(8px + env(safe-area-inset-top));
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+.qr-close svg {
+  width: 18px;
+  height: 18px;
+}
+/* Square viewfinder: the huge shadow dims everything outside it. */
+.qr-frame {
+  --size: min(70vw, 300px);
+  --corner: 44px;
+  --edge: #fff;
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 46%;
+  width: var(--size);
+  height: var(--size);
+  transform: translate(-50%, -50%);
+  border-radius: 28px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+  animation: frame-breathe 2.4s ease-in-out infinite;
+}
+.qr-frame i {
+  position: absolute;
+  width: var(--corner);
+  height: var(--corner);
+  border: 4px solid var(--edge);
+  transition: border-color 0.2s;
+}
+.qr-frame i:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 28px;
+}
+.qr-frame i:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 28px;
+}
+.qr-frame i:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-left-radius: 28px;
+}
+.qr-frame i:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 28px;
+}
+@keyframes frame-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+}
+.qr-full.is-found .qr-frame {
+  animation: none;
+}
+.qr-full.is-found .qr-frame i {
+  border-color: #30d158;
+}
+.qr-full.is-starting .qr-frame {
+  opacity: 0.5;
+}
+.qr-bottom {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 32px calc(48px + env(safe-area-inset-bottom));
   text-align: center;
-  font-size: 0.92rem;
+}
+.qr-full.is-error .qr-bottom {
+  top: 0;
+  justify-content: center;
+}
+.qr-msg {
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  max-width: 18em;
+}
+.qr-sub {
+  color: rgba(245, 245, 247, 0.7);
+  font-size: 0.95rem;
+}
+.pill-white {
+  margin-top: 16px;
+  background: #fff;
+  color: #1d1d1f;
 }
 
 /* ---------- admin ---------- */
