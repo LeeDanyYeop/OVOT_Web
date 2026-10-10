@@ -1842,3 +1842,63 @@ html.no-scroll body {
   transition: background 2s ease;
   pointer-events: none;
 }
+
+/* ---- iOS home-screen fixes ---- */
+/* stretch full-screen layers over the bottom gap (see measureIosGap in main.tsx) */
+.w,
+.profile,
+.qr-full,
+.assist-backdrop {
+  bottom: calc(-1 * var(--ios-gap, 0px));
+}
+/* sizes follow the space actually left between header and footer */
+.w-stage {
+  container-type: size;
+  --orb: clamp(104px, 30cqh, 196px);
+  --speaker: clamp(92px, 26cqh, 156px);
+  padding-top: max(16px, 2.5cqh);
+}
+.w-title {
+  font-size: clamp(1.6rem, min(9vw, 7.5cqh), 3.2rem);
+}
+@supports not (container-type: size) {
+  .w-stage {
+    --orb: clamp(110px, 22dvh, 196px);
+    --speaker: clamp(100px, 18dvh, 156px);
+  }
+}
+/* profile: always dark text on light, black bar under the status bar (no iOS scrim look) */
+.profile {
+  color: var(--text);
+}
+.profile-bar {
+  background: #000;
+  backdrop-filter: none;
+}
+.profile-back {
+  color: #6cb6ff;
+}
+/* everything in the stage scales with the space left, never spilling over the header */
+.w-stage {
+  justify-content: safe center;
+  gap: clamp(4px, 1.6cqh, 14px);
+  --speaker: clamp(84px, 24cqh, 156px);
+}
+.w-stage .speaker {
+  margin: clamp(2px, 1.2cqh, 22px) 0 clamp(2px, 1cqh, 14px);
+}
+.w-stage .w-actions {
+  margin-top: clamp(4px, 1.8cqh, 18px);
+}
+.w-stage .pill {
+  min-height: clamp(44px, 8cqh, 56px);
+}
+.w-stage .w-actions-stack {
+  gap: clamp(6px, 1.4cqh, 10px);
+}
+.w-timer {
+  font-size: clamp(1.3rem, 5.2cqh, 2rem);
+}
+.w-stage .nfc-orb {
+  margin-bottom: clamp(2px, 1.6cqh, 18px);
+}

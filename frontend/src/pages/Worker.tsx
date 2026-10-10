@@ -396,8 +396,12 @@ export function WorkerPage() {
       </main>
 
       <footer className="w-foot">
-        <button className={noNfc ? 'pill pill-dark' : 'w-link'} onClick={() => setSheetOpen(true)} disabled={busy}>
-          {noNfc ? 'QR로 등록' : '태그가 안 되나요? QR로 등록'}
+        <button
+          className={noNfc && !recording ? 'pill pill-dark' : 'w-link'}
+          onClick={() => setSheetOpen(true)}
+          disabled={busy}
+        >
+          {recording ? '다른 구역 QR로 등록' : noNfc ? 'QR로 등록' : '태그가 안 되나요? QR로 등록'}
         </button>
       </footer>
 
