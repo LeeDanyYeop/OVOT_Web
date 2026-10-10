@@ -27,9 +27,9 @@ export const OFF_LABEL: Record<OffReason, string> = {
 
 /** Shown when streaming was running and the clock crossed into off-hours. */
 export const AUTO_STOP_TEXT: Record<OffReason, string> = {
-  lunch: '점심시간이 되어 스트리밍을 자동 종료했습니다',
-  after: '퇴근 시간이 되어 스트리밍을 자동 종료했습니다',
-  before: '근무 시간이 아니라 스트리밍을 종료했습니다',
+  lunch: '점심시간이 되어 스트리밍을 자동 종료했어요',
+  after: '퇴근 시간이 되어 스트리밍을 자동 종료했어요',
+  before: '근무 시간이 아니라 스트리밍을 종료했어요',
 }
 
 /** One-line hint on the waiting screen during off-hours. */

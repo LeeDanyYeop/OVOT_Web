@@ -9,7 +9,7 @@ import { ApiError, api } from '../lib/api'
 import { unlockAudio } from '../lib/audio'
 import { useAuth } from '../lib/auth'
 import { cheerFor, currentHour, useSky } from '../lib/sky'
-import { AUTO_STOP_TEXT, OFF_HINT, OFF_LABEL, offHoursReason } from '../lib/workHours'
+import { AUTO_STOP_TEXT, OFF_HINT, OFF_LABEL, offHoursReason, type OffReason } from '../lib/workHours'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
 import { extractTagCode } from '../scan/tagCode'
 import type { CheckInSource } from '../types'
@@ -55,6 +55,8 @@ export function WorkerPage() {
   const [now, setNow] = useState(Date.now())
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<Notice>(null)
+  // Full-screen 'not working hours' message after an off-hours tag or an automatic stop.
+  const [offInfo, setOffInfo] = useState<{ reason: OffReason; autoStopped: boolean } | null>(null)
   const [pendingUploads, setPendingUploads] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -105,7 +107,7 @@ export function WorkerPage() {
     if (recorderRef.current?.active) return
     const off = offHoursReason(currentHour())
     if (off) {
-      setNotice({ kind: 'info', text: `${OFF_LABEL[off]}에는 스트리밍이 꺼집니다. 위치만 등록했어요.` })
+      setOffInfo({ reason: off, autoStopped: false })
       return
     }
     if (!voiceCaptureSupported()) {
@@ -156,6 +158,12 @@ export function WorkerPage() {
     return () => window.clearInterval(t)
   }, [recording])
 
+  useEffect(() => {
+    if (!offInfo) return
+    const t = window.setTimeout(() => setOffInfo(null), 8000)
+    return () => window.clearTimeout(t)
+  }, [offInfo])
+
   // Lunch and after-work: stop streaming automatically.
   useEffect(() => {
     if (!recording) return
@@ -163,7 +171,8 @@ export function WorkerPage() {
       const off = offHoursReason(currentHour())
       if (!off) return
       stopRecording()
-      setNotice({ kind: 'info', text: AUTO_STOP_TEXT[off] })
+      setNotice(null)
+      setOffInfo({ reason: off, autoStopped: true })
     }
     check()
     const t = window.setInterval(check, 30_000)
@@ -294,6 +303,25 @@ export function WorkerPage() {
               </button>
               <button className="pill pill-light" onClick={clearPending}>
                 취소
+              </button>
+            </div>
+          </>
+        ) : offInfo ? (
+          <>
+            <div className="off-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="17" fill="none" stroke="currentColor" strokeWidth="2.6" />
+                <path d="M24 14v10l7 4" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h1 className="w-title">지금은 근무 시간이 아닙니다</h1>
+            <p className="w-sub">
+              {offInfo.autoStopped ? AUTO_STOP_TEXT[offInfo.reason] : `${OFF_LABEL[offInfo.reason]}에는 스트리밍이 꺼집니다`}
+            </p>
+            {zone && !offInfo.autoStopped && <p className="w-off-zone">위치는 {zone.name}(으)로 등록했어요</p>}
+            <div className="w-actions">
+              <button className="pill pill-light" onClick={() => setOffInfo(null)}>
+                확인
               </button>
             </div>
           </>

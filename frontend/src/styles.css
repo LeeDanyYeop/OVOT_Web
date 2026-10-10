@@ -1398,3 +1398,38 @@ code,
   color: #ffd29a;
   background: rgba(0, 0, 0, 0.28);
 }
+
+/* "not working hours" screen */
+.off-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 14px;
+  color: #a35200;
+  background: rgba(255, 244, 229, 0.9);
+  box-shadow: 0 18px 40px -18px rgba(29, 29, 31, 0.35);
+  animation: pop-in 0.35s ease-out;
+}
+.off-icon svg {
+  width: 60px;
+  height: 60px;
+}
+@keyframes pop-in {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+.w-off-zone {
+  font-weight: 600;
+  color: var(--accent);
+}
+.w.is-night .off-icon {
+  color: #ffd29a;
+  background: rgba(0, 0, 0, 0.3);
+}
+.w.is-night .w-off-zone {
+  color: #6cb6ff;
+}
