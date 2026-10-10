@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { startQuestionCapture, type QuestionCapture } from '../capture/questionCapture'
 import { ApiError, api } from '../lib/api'
 import type { AssistCard, AssistContext } from '../types'
@@ -12,6 +12,8 @@ interface Props {
 type Talk = 'idle' | 'listening' | 'thinking'
 const HOLD_MS = 450 // shorter press = tap mode (tap again to send), for gloved hands
 const MIN_QUESTION_MS = 700
+const DISMISS_RATIO = 0.33 // drag past a third of the sheet height to close
+const FLICK_SPEED = 0.6 // px/ms — a fast downward flick also closes
 
 const QUICK: { kind: 'next' | 'tools' | 'cautions'; label: string }[] = [
   { kind: 'next', label: '다음 순서' },
@@ -20,7 +22,7 @@ const QUICK: { kind: 'next' | 'tools' | 'cautions'; label: string }[] = [
 ]
 
 /** '오봇에게 물어보기': quick questions + push-to-talk, answered as one short card. */
-export function AssistSheet({ stream, onClose }: Props) {
+export function AssistSheet({ stream, onClose: close }: Props) {
   const [ctx, setCtx] = useState<AssistContext | null>(null)
   const [talk, setTalk] = useState<Talk>('idle')
   const [card, setCard] = useState<AssistCard | null>(null)
@@ -30,6 +32,68 @@ export function AssistSheet({ stream, onClose }: Props) {
   const [escalated, setEscalated] = useState<string | null>(null)
   const captureRef = useRef<QuestionCapture | null>(null)
   const pressedAt = useRef(0)
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const backdropRef = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ startY: number; startT: number; dy: number } | null>(null)
+  const closingRef = useRef(false)
+
+  // Slide the sheet down, then unmount it.
+  const onClose = useCallback(() => {
+    if (closingRef.current) return
+    closingRef.current = true
+    const sheet = sheetRef.current
+    const backdrop = backdropRef.current
+    if (sheet) {
+      sheet.style.transition = 'transform 0.22s ease-in'
+      sheet.style.transform = 'translateY(110%)'
+    }
+    if (backdrop) {
+      backdrop.style.transition = 'opacity 0.22s ease-in'
+      backdrop.style.opacity = '0'
+    }
+    window.setTimeout(close, 210)
+  }, [close])
+
+  // Swipe down on the grabber/header to dismiss (iOS sheet behaviour).
+  const onDragStart = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) return
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    } catch {
+      /* capture unsupported: moves still arrive while the finger stays on the handle */
+    }
+    drag.current = { startY: e.clientY, startT: Date.now(), dy: 0 }
+    if (sheetRef.current) sheetRef.current.style.transition = 'none'
+  }
+  const onDragMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    const sheet = sheetRef.current
+    if (!d || !sheet) return
+    // resist upward pulls, follow downward ones
+    const raw = e.clientY - d.startY
+    d.dy = raw > 0 ? raw : raw / 6
+    sheet.style.transform = `translateY(${d.dy}px)`
+    if (backdropRef.current) {
+      backdropRef.current.style.opacity = String(Math.max(0.2, 1 - Math.max(0, d.dy) / sheet.offsetHeight))
+    }
+  }
+  const onDragEnd = () => {
+    const d = drag.current
+    const sheet = sheetRef.current
+    drag.current = null
+    if (!d || !sheet) return
+    const speed = d.dy / Math.max(1, Date.now() - d.startT)
+    if (d.dy > sheet.offsetHeight * DISMISS_RATIO || (d.dy > 30 && speed > FLICK_SPEED)) {
+      onClose()
+      return
+    }
+    sheet.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)'
+    sheet.style.transform = ''
+    if (backdropRef.current) {
+      backdropRef.current.style.transition = 'opacity 0.28s'
+      backdropRef.current.style.opacity = ''
+    }
+  }
 
   useEffect(() => {
     api.assistContext().then(setCtx).catch(() => undefined)
@@ -130,25 +194,40 @@ export function AssistSheet({ stream, onClose }: Props) {
   }
 
   return (
-    <div className="assist-backdrop" onClick={onClose}>
-      <div className="assist-sheet" role="dialog" aria-modal="true" aria-label="오봇에게 물어보기" onClick={(e) => e.stopPropagation()}>
-        <div className="assist-grab" aria-hidden="true" />
-        <header className="assist-head">
-          <div>
-            <p className="assist-eyebrow">오봇에게 물어보기</p>
-            <h2>{ctx?.assignment ?? '현재 작업'}</h2>
-            {ctx?.step && (
-              <p className="assist-ctx">
-                {ctx.zone?.name} · {ctx.step.current}/{ctx.step.total}단계 {ctx.step.name}
-              </p>
-            )}
-          </div>
-          <button className="assist-x" onClick={onClose} aria-label="닫기">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
-          </button>
-        </header>
+    <div className="assist-backdrop" ref={backdropRef} onClick={onClose}>
+      <div
+        className="assist-sheet"
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="오봇에게 물어보기"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="assist-drag"
+          onPointerDown={onDragStart}
+          onPointerMove={onDragMove}
+          onPointerUp={onDragEnd}
+          onPointerCancel={onDragEnd}
+        >
+          <div className="assist-grab" aria-hidden="true" />
+          <header className="assist-head">
+            <div>
+              <p className="assist-eyebrow">오봇에게 물어보기</p>
+              <h2>{ctx?.assignment ?? '현재 작업'}</h2>
+              {ctx?.step && (
+                <p className="assist-ctx">
+                  {ctx.zone?.name} · {ctx.step.current}/{ctx.step.total}단계 {ctx.step.name}
+                </p>
+              )}
+            </div>
+            <button className="assist-x" onClick={onClose} aria-label="닫기">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </header>
+        </div>
 
         {card ? (
           <section className="assist-card" aria-live="polite">

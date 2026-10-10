@@ -283,11 +283,7 @@ code,
   overscroll-behavior: none;
   display: flex;
   flex-direction: column;
-  /* sky that follows the time of day: sun/moon glow over a vertical gradient */
-  background:
-    radial-gradient(circle at var(--glow-x) var(--glow-y), var(--glow) 0, transparent 34%),
-    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
-  transition: background 2s ease;
+  isolation: isolate;
   animation: sky-in 0.9s ease-out;
   padding: 0 0 env(safe-area-inset-bottom);
   --orb: clamp(128px, 24dvh, 196px);
@@ -1814,4 +1810,35 @@ html.no-scroll body {
   .w-cheer {
     display: none;
   }
+}
+/* swipe-down handle: grabber + header */
+.assist-drag {
+  touch-action: none;
+  cursor: grab;
+  margin: -8px -22px 0;
+  padding: 8px 22px 0;
+}
+.assist-drag:active {
+  cursor: grabbing;
+}
+.assist-sheet {
+  will-change: transform;
+}
+
+/* Sky that follows the time of day. Painted on a layer that overshoots the bottom edge:
+   iOS home-screen apps with a translucent status bar shift the page up but leave a
+   status-bar-high gap at the bottom; the overshoot fills it with sky instead of black. */
+.w::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: calc(-1 * env(safe-area-inset-top) - 40px);
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y), var(--glow) 0, transparent 34%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  transition: background 2s ease;
+  pointer-events: none;
 }
