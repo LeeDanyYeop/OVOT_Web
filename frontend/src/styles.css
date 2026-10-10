@@ -1433,3 +1433,316 @@ code,
 .w.is-night .w-off-zone {
   color: #6cb6ff;
 }
+
+/* ---------- 오봇에게 물어보기 ---------- */
+.w-actions-stack {
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.pill-ask {
+  gap: 8px;
+  min-width: 240px;
+}
+.pill-ask svg {
+  width: 20px;
+  height: 20px;
+}
+.assist-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: qr-in 0.2s ease-out;
+}
+.assist-sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text);
+  border-radius: 28px 28px 0 0;
+  padding: 8px 22px calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, 0.35);
+  animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+@media (min-width: 700px) {
+  .assist-backdrop {
+    align-items: center;
+  }
+  .assist-sheet {
+    border-radius: 28px;
+  }
+}
+.assist-grab {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  margin: 4px auto 14px;
+}
+.assist-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.assist-eyebrow {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.assist-head h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.assist-ctx {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin-top: 2px;
+}
+.assist-x {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: var(--bg-alt);
+  cursor: pointer;
+}
+.assist-x svg {
+  width: 16px;
+  height: 16px;
+}
+.assist-ask {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 0 6px;
+}
+.assist-q {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.assist-quick,
+.assist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.assist-chip {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 980px;
+  border: 0;
+  background: var(--bg-alt);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.assist-chip:hover:not(:disabled) {
+  background: var(--hairline);
+}
+.assist-chip:disabled {
+  opacity: 0.55;
+}
+.assist-chip.is-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.assist-mic {
+  margin-top: 26px;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  border: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 16px 36px -14px rgba(0, 113, 227, 0.7);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: transform 0.12s, background 0.2s;
+}
+.assist-mic svg {
+  width: 36px;
+  height: 36px;
+}
+.assist-mic.is-listening {
+  background: #ff3b30;
+  transform: scale(1.08);
+  box-shadow: 0 0 0 12px rgba(255, 59, 48, 0.16), 0 16px 36px -14px rgba(255, 59, 48, 0.7);
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+.assist-mic.is-thinking {
+  background: var(--muted);
+}
+@keyframes mic-pulse {
+  50% {
+    box-shadow: 0 0 0 20px rgba(255, 59, 48, 0.08), 0 16px 36px -14px rgba(255, 59, 48, 0.7);
+  }
+}
+.assist-mic-label {
+  margin-top: 14px;
+  font-weight: 600;
+}
+.assist-note {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.assist-card {
+  padding: 18px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.assist-quote {
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+.assist-flag {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 980px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a35200;
+  background: var(--warn-bg);
+}
+.assist-headline {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+.assist-details,
+.assist-refs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.assist-details li {
+  position: relative;
+  padding-left: 16px;
+}
+.assist-details li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.assist-refs {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-alt);
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+.assist-figure {
+  margin: 0;
+}
+.assist-figure img {
+  width: 100%;
+  border-radius: 16px;
+  display: block;
+}
+.assist-figure figcaption {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.assist-actions {
+  justify-content: flex-start;
+}
+.assist-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.assist-link {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  cursor: pointer;
+}
+.assist-error {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--danger);
+}
+.assist-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.assist-log li {
+  padding: 10px 0;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.assist-log li:first-child {
+  border-top: 0;
+}
+.assist-log li.is-escalated {
+  margin: 0 -10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--danger-bg);
+}
+.assist-log-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.assist-log-top .muted,
+.assist-log-a {
+  font-size: 0.85rem;
+}
+.assist-log-q {
+  font-weight: 600;
+}
+.assist-log .badge {
+  align-self: flex-start;
+  margin-top: 4px;
+}

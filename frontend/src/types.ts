@@ -141,9 +141,48 @@ export interface VoiceClipInfo {
   received_at: string
 }
 
+export interface AssistContext {
+  assignment: string | null
+  zone: ZoneBrief | null
+  step: { current: number; total: number; name: string } | null
+  voice_enabled: boolean
+}
+
+export interface AssistCard {
+  log_id: number
+  kind: 'next' | 'tools' | 'cautions' | 'voice'
+  question: string | null
+  headline: string
+  details: string[]
+  figure: { url: string; caption: string } | null
+  show_figure: boolean
+  references: string[]
+  owner: string | null
+  needs_supervisor: boolean
+  source: 'guide' | 'ai' | 'fallback'
+  escalated: boolean
+  created_at: string
+}
+
+export interface AssistLogItem {
+  id: number
+  kind: string
+  kind_label: string
+  question: string | null
+  headline: string
+  source: string
+  assignment: string | null
+  worker: WorkerBrief
+  zone: ZoneBrief | null
+  escalated: boolean
+  escalated_at: string | null
+  created_at: string
+}
+
 export type HubMessage =
   | { type: 'ready' }
   | { type: 'error'; code: string }
   | { type: 'worker_location_changed' | 'worker_location_confirmed'; data: LocationEvent }
   | { type: 'tag_scan_rejected'; data: TagAlert }
   | { type: 'voice_clip_recorded'; data: VoiceClipInfo }
+  | { type: 'assist_asked' | 'assist_escalated'; data: AssistLogItem }

@@ -31,3 +31,9 @@ DEMO_ADMIN_ID = os.getenv("OVOT_DEMO_ADMIN_ID", "W-004")
 
 AUDIO_DIR = Path(os.getenv("OVOT_AUDIO_DIR", str(DATA_DIR / "audio")))
 MAX_CLIP_BYTES = int(os.getenv("OVOT_MAX_CLIP_BYTES", str(10 * 1024 * 1024)))
+
+# '오봇에게 물어보기' voice questions (speech → answer). Without a key, voice questions
+# return a guidance card; the quick buttons work from approved guides either way.
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+ASSIST_AUDIO_DIR = Path(os.getenv("OVOT_ASSIST_AUDIO_DIR", str(DATA_DIR / "assist")))

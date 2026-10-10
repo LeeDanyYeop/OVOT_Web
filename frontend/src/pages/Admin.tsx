@@ -2,12 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/Brand'
 import { RiskBadge } from '../components/RiskBadge'
+import { AssistPanel } from '../components/AssistPanel'
 import { VoiceClipsPanel } from '../components/VoiceClipsPanel'
 import { ApiError, api } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { REJECT_LABEL, SOURCE_LABEL, ago, hhmm, hhmmss } from '../lib/format'
 import { useEventHub, type HubStatus } from '../lib/useEventHub'
-import type { HubMessage, LocationEvent, TagAlert, VoiceClipInfo, WorkersLocations, ZoneWorker, ZonesState } from '../types'
+import type { AssistLogItem, HubMessage, LocationEvent, TagAlert, VoiceClipInfo, WorkersLocations, ZoneWorker, ZonesState } from '../types'
 
 const FLASH_MS = 6000
 
@@ -33,6 +34,7 @@ export function AdminPage() {
   const [events, setEvents] = useState<LocationEvent[]>([])
   const [alerts, setAlerts] = useState<TagAlert[]>([])
   const [clips, setClips] = useState<VoiceClipInfo[]>([])
+  const [assists, setAssists] = useState<AssistLogItem[]>([])
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [flash, setFlash] = useState<Record<string, number>>({})
@@ -54,10 +56,16 @@ export function AdminPage() {
   const loadAll = useCallback(async () => {
     await loadState()
     try {
-      const [e, a, v] = await Promise.all([api.adminEvents(50), api.adminTagAlerts(20), api.adminVoiceClips(10)])
+      const [e, a, v, q] = await Promise.all([
+        api.adminEvents(50),
+        api.adminTagAlerts(20),
+        api.adminVoiceClips(10),
+        api.adminAssist(20),
+      ])
       setEvents(e.items)
       setAlerts(a.items)
       setClips(v.items)
+      setAssists(q.items)
     } catch {
       /* surfaced by loadState */
     }
@@ -91,6 +99,8 @@ export function AdminPage() {
           FLASH_MS,
         )
         scheduleStateRefresh()
+      } else if (msg.type === 'assist_asked' || msg.type === 'assist_escalated') {
+        setAssists((prev) => [msg.data, ...prev.filter((p) => p.id !== msg.data.id)].slice(0, 30))
       } else if (msg.type === 'voice_clip_recorded') {
         setClips((prev) => [msg.data, ...prev.filter((c) => c.clip_id !== msg.data.clip_id)].slice(0, 20))
       } else if (msg.type === 'tag_scan_rejected') {
@@ -264,6 +274,7 @@ export function AdminPage() {
           </section>
 
           <aside className="side">
+            <AssistPanel items={assists} />
             <VoiceClipsPanel clips={clips} />
 
             <section className="panel" aria-labelledby="alerts-h">

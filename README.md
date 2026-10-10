@@ -84,6 +84,17 @@ STT·노이즈 저감·LLM 구조화는 아직 없고, 원본 음성만 `backend
 시연용으로 주소에 `?time=12.5`처럼 시각을 붙이면 그 시각으로 동작합니다(배경 하늘·응원 문구도 같이 바뀜).
 현재 이 판단은 휴대폰 시계 기준이며, 서버에서 막는 기능은 아직 없습니다.
 
+## 오봇에게 물어보기 (작업 도움)
+
+스트리밍 화면의 **오봇에게 물어보기** → `다음 순서` `준비물` `주의사항` 또는 🎙 **직접 질문**.
+답변은 한 장의 카드(핵심 한 문장 → 근거·그림 → `그림 보기` `관련 지침` `담당자에게 확인`)로 보여주고, 닫으면 바로 작업으로 돌아갑니다.
+
+- **맥락은 서버가 붙입니다**: 작업자가 작업·구역·단계를 설명할 필요 없이, 서버가 세션 작업자의 배정 작업·현재 위치·승인된 지침(`backend/app/guides.py`)을 찾아 씁니다.
+- **빠른 질문 3개는 AI 없이 승인된 지침만으로 답합니다** (정확·즉시).
+- **직접 질문은 마이크를 새로 켜지 않습니다**: 이미 스트리밍 중인 마이크 소리를 Web Audio로 함께 받아 16kHz WAV로 만들어 보냅니다(`frontend/src/capture/questionCapture.ts`). 그래서 스트리밍 녹음은 끊기지 않습니다. 누른 채 말하고 떼거나, 짧게 눌러 시작·다시 눌러 끝.
+- 직접 질문은 `GEMINI_API_KEY`가 있으면 Gemini(`GEMINI_MODEL`, 기본 gemini-3.6-flash)가 음성을 받아 지침 안에서만 답합니다. 지침에 없거나 안전·품질 판단이 필요하면 `담당자 확인 필요`로 돌립니다. 키가 없으면 안내 카드를 보여주고 질문 음성은 저장됩니다.
+- 질문·답변·담당자 확인 요청은 기록되어 관리자 화면 **현장 질문** 패널에 실시간으로 뜹니다.
+
 ## 시연 모드 (로그인 없음)
 
 해커톤 시연용으로 **로그인 화면이 없습니다.** 접속하면 서버가 정해진 시연 계정의 세션을 자동 발급합니다.
@@ -170,6 +181,11 @@ QR을 휴대폰 기본 카메라로 찍으면 `/?tag=…&src=qr` 주소가 열�
 | GET | `/api/admin/tags` | 태그 목록 |
 | POST | `/api/voice/clips?duration_ms=&started_at=&location_event_id=` | 음성 클립 업로드 (본문: `audio/*` 원본) |
 | GET | `/api/admin/voice/clips` · `/{clip_id}/audio` | 음성 클립 목록 · 재생 (관리자) |
+| GET | `/api/assist/context` | 현재 작업 맥락(작업·구역·단계) |
+| POST | `/api/assist/quick` | `{kind: next\|tools\|cautions}` → 지침 기반 답변 카드 |
+| POST | `/api/assist/ask` | 질문 음성(`audio/*` 원본) → 답변 카드 |
+| POST | `/api/assist/{log_id}/escalate` | 담당자에게 확인 요청 |
+| GET | `/api/admin/assist` | 현장 질문 기록 (관리자) |
 | WS | `/ws/location-events` | 첫 메시지 `{"type":"auth","token":"…"}` 후 실시간 사건 수신 (관리자) |
 
 인증은 `Authorization: Bearer <token>`. API 문서: http://localhost:8100/docs

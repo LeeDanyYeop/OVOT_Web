@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .db import SessionLocal
-from .routers import admin, auth, client_log, location, voice, ws
+from .routers import admin, assist, auth, client_log, location, voice, ws
 from .seed import init_db, seed
 
 # Windows registries often map .js to text/plain, which browsers refuse for module scripts.
@@ -39,6 +39,7 @@ app.include_router(auth.router)
 app.include_router(location.router)
 app.include_router(admin.router)
 app.include_router(voice.router)
+app.include_router(assist.router)
 app.include_router(ws.router)
 app.include_router(client_log.router)
 

@@ -113,3 +113,27 @@ def voice_clip(c) -> dict:
         "client_started_at": to_kst_iso(c.client_started_at),
         "received_at": to_kst_iso(c.received_at),
     }
+
+
+QUICK_LABELS = {"next": "다음 순서", "tools": "준비물", "cautions": "주의사항", "voice": "직접 질문"}
+
+
+def assist_log(a) -> dict:
+    import json
+
+    answer = json.loads(a.answer_json)
+    return {
+        "id": a.id,
+        "event_type": "assist_asked",
+        "kind": a.kind,
+        "kind_label": QUICK_LABELS.get(a.kind, a.kind),
+        "question": a.question,
+        "headline": answer.get("headline"),
+        "source": a.source,
+        "assignment": a.assignment_title,
+        "worker": worker_brief(a.worker),
+        "zone": zone_brief(a.zone),
+        "escalated": a.escalated_at is not None,
+        "escalated_at": to_kst_iso(a.escalated_at),
+        "created_at": to_kst_iso(a.created_at),
+    }

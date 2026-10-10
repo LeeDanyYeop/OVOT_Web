@@ -150,3 +150,24 @@ class VoiceClip(Base):
 
     worker: Mapped[Worker] = relationship()
     zone: Mapped[Zone | None] = relationship()
+
+
+class AssistLog(Base):
+    """'오봇에게 물어보기' question/answer, kept with the worker's context at that moment."""
+
+    __tablename__ = "assist_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    worker_id: Mapped[str] = mapped_column(ForeignKey("workers.id"), nullable=False, index=True)
+    zone_id: Mapped[str | None] = mapped_column(ForeignKey("zones.id"))
+    assignment_title: Mapped[str | None] = mapped_column(String(128))
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)  # next / tools / cautions / voice
+    question: Mapped[str | None] = mapped_column(Text)  # transcript for voice questions
+    answer_json: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(String(16), nullable=False)  # guide / ai / fallback
+    escalated_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)
+    audio_path: Mapped[str | None] = mapped_column(String(256))
+
+    worker: Mapped[Worker] = relationship()
+    zone: Mapped[Zone | None] = relationship()

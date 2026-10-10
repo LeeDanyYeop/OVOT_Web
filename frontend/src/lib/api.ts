@@ -7,6 +7,9 @@ import type {
   TagAlert,
   TagInfo,
   VoiceClipInfo,
+  AssistCard,
+  AssistContext,
+  AssistLogItem,
   WorkersLocations,
   ZonesState,
 } from '../types'
@@ -172,5 +175,19 @@ export const api = {
   },
   adminVoiceClips: (limit = 10) => request<{ items: VoiceClipInfo[] }>(`/api/admin/voice/clips?limit=${limit}`),
   adminClipAudio: async (clipId: string) => (await authedRaw(`/api/admin/voice/clips/${clipId}/audio`, {})).blob(),
+  assistContext: () => request<AssistContext>('/api/assist/context'),
+  assistQuick: (kind: 'next' | 'tools' | 'cautions') =>
+    request<AssistCard>('/api/assist/quick', { method: 'POST', body: JSON.stringify({ kind }) }),
+  assistAsk: async (audio: Blob, durationMs: number) => {
+    const res = await authedRaw(`/api/assist/ask?duration_ms=${Math.round(durationMs)}`, {
+      method: 'POST',
+      body: audio,
+      headers: { 'Content-Type': audio.type || 'audio/wav' },
+    })
+    return (await res.json()) as AssistCard
+  },
+  assistEscalate: (logId: number) =>
+    request<{ ok: boolean; owner: string | null }>(`/api/assist/${logId}/escalate`, { method: 'POST' }),
+  adminAssist: (limit = 20) => request<{ items: AssistLogItem[] }>(`/api/admin/assist?limit=${limit}`),
   adminTags: () => request<{ items: TagInfo[] }>('/api/admin/tags'),
 }

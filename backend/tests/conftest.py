@@ -9,6 +9,8 @@ _tmp = Path(tempfile.mkdtemp(prefix="ovot-test-"))
 os.environ["OVOT_DATABASE_URL"] = f"sqlite:///{(_tmp / 'test.db').as_posix()}"
 os.environ["OVOT_FRONTEND_DIST"] = str(_tmp / "no-dist")
 os.environ["OVOT_AUDIO_DIR"] = str(_tmp / "audio")
+os.environ["OVOT_ASSIST_AUDIO_DIR"] = str(_tmp / "assist")
+os.environ["GEMINI_API_KEY"] = ""
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from fastapi.testclient import TestClient  # noqa: E402

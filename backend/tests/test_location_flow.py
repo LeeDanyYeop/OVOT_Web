@@ -188,3 +188,35 @@ def test_voice_clip_upload_is_tied_to_session_and_zone(client):
     assert items[1]["clip_id"] == clip["clip_id"]
     played = client.get(f"/api/admin/voice/clips/{clip['clip_id']}/audio", headers=admin)
     assert played.status_code == 200 and played.content == audio
+
+
+def test_assist_quick_answers_use_session_context(client):
+    worker = login(client, "1001")
+    ctx = client.get("/api/assist/context", headers=worker).json()
+    assert ctx["assignment"] == "3번 블록 용접" and ctx["step"]["current"] == 3
+
+    nxt = client.post("/api/assist/quick", json={"kind": "next"}, headers=worker).json()
+    assert "슬래그 제거 후 2·3층 적층" in nxt["headline"]
+    assert nxt["owner"].startswith("이준호") and nxt["figure"]["url"].endswith(".svg")
+
+    tools = client.post("/api/assist/quick", json={"kind": "tools"}, headers=worker).json()
+    assert any("FCAW" in d for d in tools["details"])
+
+
+def test_assist_voice_without_ai_key_falls_back_and_escalates(client):
+    worker = login(client, "1001")
+    admin = login(client, "1004")
+    card = client.post(
+        "/api/assist/ask?duration_ms=3000",
+        content=b"RIFF....WAVEfake",
+        headers={**worker, "Content-Type": "audio/wav"},
+    ).json()
+    assert card["source"] == "fallback" and card["needs_supervisor"] is True
+
+    other = login(client, "1003")
+    assert client.post(f"/api/assist/{card['log_id']}/escalate", headers=other).status_code == 404
+    res = client.post(f"/api/assist/{card['log_id']}/escalate", headers=worker).json()
+    assert res["owner"].startswith("이준호")
+
+    items = client.get("/api/admin/assist", headers=admin).json()["items"]
+    assert items[0]["escalated"] is True and items[0]["kind_label"] == "직접 질문"

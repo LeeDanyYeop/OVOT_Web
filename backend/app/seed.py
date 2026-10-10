@@ -111,6 +111,7 @@ def init_db(reset: bool = False) -> None:
     if reset:
         Base.metadata.drop_all(engine)
         shutil.rmtree(config.AUDIO_DIR, ignore_errors=True)  # recorded clips belong to the wiped data
+        shutil.rmtree(config.ASSIST_AUDIO_DIR, ignore_errors=True)
     Base.metadata.create_all(engine)
 
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { useSearchParams } from 'react-router-dom'
 import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../capture/voiceCapture'
 import { QrScanSheet } from '../components/QrScanSheet'
+import { AssistSheet } from '../components/AssistSheet'
 import { InstallBanner } from '../components/InstallBanner'
 import { ProfileSheet } from '../components/ProfileSheet'
 import { SpeakingAvatar } from '../components/SpeakingAvatar'
@@ -60,6 +61,7 @@ export function WorkerPage() {
   const [pendingUploads, setPendingUploads] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [assistOpen, setAssistOpen] = useState(false)
   const [params, setParams] = useSearchParams()
 
   const nfcAbort = useRef<AbortController | null>(null)
@@ -334,7 +336,19 @@ export function WorkerPage() {
               {mmss(now - recStartedAt)}
             </p>
             <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
-            <div className="w-actions">
+            <div className="w-actions w-actions-stack">
+              <button className="pill pill-dark pill-ask" onClick={() => setAssistOpen(true)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                오봇에게 물어보기
+              </button>
               <button className="pill pill-light" onClick={stopRecording}>
                 스트리밍 종료
               </button>
@@ -382,6 +396,7 @@ export function WorkerPage() {
       </footer>
 
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
+      {assistOpen && recording && <AssistSheet stream={micStream} onClose={() => setAssistOpen(false)} />}
       {sheetOpen && <QrScanSheet onScan={(c) => void submit(c, 'qr')} onClose={() => setSheetOpen(false)} />}
     </div>
   )
