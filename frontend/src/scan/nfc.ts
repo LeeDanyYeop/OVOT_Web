@@ -44,7 +44,7 @@ function mapError(err: unknown): NfcError {
     return new NfcError('permission', 'NFC 권한이 거부되었습니다. 브라우저 사이트 설정에서 NFC를 허용하세요.')
   if (name === 'NotSupportedError')
     return new NfcError('unsupported', '휴대폰의 NFC가 꺼져 있거나 지원되지 않습니다. 설정에서 NFC를 켜세요.')
-  return new NfcError('unknown', 'NFC를 시작할 수 없습니다. QR 또는 코드 입력을 사용하세요.')
+  return new NfcError('unknown', 'NFC를 시작할 수 없습니다. 아래 QR로 등록하세요.')
 }
 
 function decodeRecord(r: NDEFRecordLike): string | null {
