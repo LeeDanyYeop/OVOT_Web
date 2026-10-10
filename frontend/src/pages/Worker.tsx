@@ -333,7 +333,7 @@ export function WorkerPage() {
             <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
             </p>
-            <p className="w-sub">구역을 옮기면 새 구역의 태그만 대세요</p>
+            <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
             <div className="w-actions">
               <button className="pill pill-light" onClick={stopRecording}>
                 스트리밍 종료
