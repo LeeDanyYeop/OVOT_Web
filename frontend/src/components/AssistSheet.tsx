@@ -186,10 +186,10 @@ export function AssistSheet({ assist, onClose: close, onMinimize }: Props) {
               )}
             </div>
             <div className="assist-foot">
-              <button className="assist-link" onClick={assist.clearCard}>
+              <button className="assist-btn" onClick={assist.clearCard}>
                 다른 질문
               </button>
-              <button className="pill pill-dark" onClick={onClose}>
+              <button className="assist-btn is-dark" onClick={onClose}>
                 작업으로 돌아가기
               </button>
             </div>

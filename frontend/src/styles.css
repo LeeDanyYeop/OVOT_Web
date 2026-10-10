@@ -2107,3 +2107,70 @@ html.no-scroll body {
 .assist-ask {
   padding-bottom: 18px;
 }
+
+/* ---- 오봇 sheet: solid white, visible buttons, edges aligned with the text ---- */
+.assist-sheet {
+  background: #fff;
+  color: var(--text);
+}
+/* white continues below the sheet (Safari's floating toolbar area) */
+.assist-sheet::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -120px;
+  height: 120px;
+  background: #fff;
+}
+.assist-sheet .assist-chip,
+.mini-bubble .assist-chip {
+  background: #f0f0f3;
+  color: var(--text);
+  padding: 0 10px;
+}
+.assist-sheet .assist-chip:hover:not(:disabled),
+.mini-bubble .assist-chip:hover:not(:disabled) {
+  background: #e6e6eb;
+}
+.assist-sheet .assist-chip.is-primary,
+.mini-bubble .assist-chip.is-primary {
+  background: var(--accent);
+  color: #fff;
+}
+/* equal-width rows that span the full text width */
+.assist-quick,
+.assist-actions,
+.mini-actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+.assist-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.assist-btn {
+  min-height: 52px;
+  border-radius: 980px;
+  border: 0;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: #f0f0f3;
+  cursor: pointer;
+}
+.assist-btn.is-dark {
+  color: #fff;
+  background: var(--text);
+}
+/* the night-sky colour overrides must not leak into the white sheet */
+.w.is-night .assist-sheet .pill-dark {
+  background: var(--text);
+  color: #fff;
+}
