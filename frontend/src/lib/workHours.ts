@@ -10,8 +10,15 @@ export type OffReason = 'lunch' | 'after' | 'before'
 
 const fmt = (h: number) => `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`
 
+/**
+ * Lunch / after-work auto-stop switch. Temporarily OFF while testing '오봇에게 물어보기'
+ * in the evening — set back to true to restore the working-hours limit.
+ */
+export const ENFORCE_WORK_HOURS = false
+
 /** null while streaming is allowed, otherwise why it is not. */
 export function offHoursReason(hour: number): OffReason | null {
+  if (!ENFORCE_WORK_HOURS) return null
   const { start, lunchStart, lunchEnd, end } = WORK_HOURS
   if (hour < start) return 'before'
   if (hour >= end) return 'after'
