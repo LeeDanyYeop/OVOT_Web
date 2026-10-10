@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../capture/voiceCapture'
 import { QrScanSheet } from '../components/QrScanSheet'
@@ -8,6 +8,7 @@ import { SpeakingAvatar } from '../components/SpeakingAvatar'
 import { ApiError, api } from '../lib/api'
 import { unlockAudio } from '../lib/audio'
 import { useAuth } from '../lib/auth'
+import { cheerFor, useSky } from '../lib/sky'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
 import { extractTagCode } from '../scan/tagCode'
 import type { CheckInSource } from '../types'
@@ -223,11 +224,23 @@ export function WorkerPage() {
     setParams(params, { replace: true })
   }
 
+  const sky = useSky()
   const needsTap = nfcState === 'idle' || nfcState === 'error'
   const noNfc = nfcState === 'unsupported' || nfcState === 'insecure'
 
   return (
-    <div className="w">
+    <div
+      className={`w ${sky.night ? 'is-night' : ''}`}
+      style={
+        {
+          '--sky-top': sky.top,
+          '--sky-bottom': sky.bottom,
+          '--glow': sky.glow,
+          '--glow-x': `${sky.glowX}%`,
+          '--glow-y': `${sky.glowY}%`,
+        } as CSSProperties
+      }
+    >
       <header className="w-head">
         <img className="w-logo" src="/logo.png" alt="OVOT" width={104} height={36} />
         {me && (
@@ -304,6 +317,7 @@ export function WorkerPage() {
                   ? '가운데를 한 번 눌러 시작하세요'
                   : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
             </p>
+            <p className="w-cheer">{cheerFor(sky.hour)}</p>
           </>
         )}
 

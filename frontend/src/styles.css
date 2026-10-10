@@ -270,10 +270,21 @@ code,
 
 /* ---------- worker: two states only ---------- */
 .w {
+  --sky-top: #9fd0ff;
+  --sky-bottom: #eaf5ff;
+  --glow: rgba(255, 248, 225, 0.75);
+  --glow-x: 50%;
+  --glow-y: 20%;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  /* sky that follows the time of day: sun/moon glow over a vertical gradient */
+  background:
+    radial-gradient(circle at var(--glow-x) var(--glow-y), var(--glow) 0, transparent 34%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  background-attachment: fixed;
+  transition: background 2s ease;
+  animation: sky-in 0.9s ease-out;
   padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
 }
 .w-head {
@@ -1300,4 +1311,67 @@ code,
 }
 .profile-row .is-warn {
   color: var(--warn);
+}
+
+@keyframes sky-in {
+  from {
+    opacity: 0;
+  }
+}
+.w-cheer {
+  margin-top: 6px;
+  max-width: 21em;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: rgba(29, 29, 31, 0.78);
+}
+/* Night sky: switch text and controls to light colors */
+.w.is-night {
+  color: #f5f5f7;
+}
+.w.is-night .w-title {
+  color: #f5f5f7;
+}
+.w.is-night .w-sub,
+.w.is-night .w-quiet {
+  color: rgba(245, 245, 247, 0.72);
+}
+.w.is-night .w-cheer {
+  color: rgba(245, 245, 247, 0.9);
+}
+.w.is-night .w-eyebrow {
+  color: #6cb6ff;
+}
+/* dawn/dusk skies end in warm colors, so the footer link goes white there */
+.w.is-night .w-link {
+  color: #fff;
+  font-weight: 600;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+.w.is-night .w-timer {
+  color: rgba(245, 245, 247, 0.65);
+}
+.w.is-night .pill-light {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  backdrop-filter: blur(20px);
+}
+.w.is-night .pill-dark {
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+.w.is-night .install-banner {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f5f5f7;
+}
+.w.is-night .install-text span,
+.w.is-night .install-close {
+  color: rgba(245, 245, 247, 0.7);
+}
+.w.is-night .w-notice.is-error {
+  color: #ff8a80;
+}
+.w .install-banner {
+  backdrop-filter: blur(20px);
 }
