@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { startQuestionCapture, type QuestionCapture } from '../capture/questionCapture'
 import { ApiError, api } from '../lib/api'
-import type { AssistCard, AssistContext } from '../types'
+import type { AssistCard } from '../types'
 
 interface Props {
   /** The microphone stream that is already streaming; questions are tapped from it. */
@@ -23,7 +23,6 @@ const QUICK: { kind: 'next' | 'tools' | 'cautions'; label: string }[] = [
 
 /** '오봇에게 물어보기': quick questions + push-to-talk, answered as one short card. */
 export function AssistSheet({ stream, onClose: close }: Props) {
-  const [ctx, setCtx] = useState<AssistContext | null>(null)
   const [talk, setTalk] = useState<Talk>('idle')
   const [card, setCard] = useState<AssistCard | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -96,7 +95,6 @@ export function AssistSheet({ stream, onClose: close }: Props) {
   }
 
   useEffect(() => {
-    api.assistContext().then(setCtx).catch(() => undefined)
     return () => captureRef.current?.cancel()
   }, [])
 
@@ -212,15 +210,7 @@ export function AssistSheet({ stream, onClose: close }: Props) {
         >
           <div className="assist-grab" aria-hidden="true" />
           <header className="assist-head">
-            <div>
-              <p className="assist-eyebrow">오봇에게 물어보기</p>
-              <h2>{ctx?.assignment ?? '현재 작업'}</h2>
-              {ctx?.step && (
-                <p className="assist-ctx">
-                  {ctx.zone?.name} · {ctx.step.current}/{ctx.step.total}단계 {ctx.step.name}
-                </p>
-              )}
-            </div>
+            <h2 className="assist-title">오봇에게 물어보기</h2>
             <button className="assist-x" onClick={onClose} aria-label="닫기">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />

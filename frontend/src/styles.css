@@ -1901,3 +1901,43 @@ html.no-scroll body {
 .w-stage .nfc-orb {
   margin-bottom: clamp(2px, 1.6cqh, 18px);
 }
+
+/* compact '오봇에게 물어보기' sheet */
+.assist-head {
+  align-items: center;
+}
+.assist-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.assist-grab {
+  margin: 2px auto 10px;
+}
+.assist-ask {
+  padding: 12px 0 0;
+}
+.assist-q {
+  font-size: 1.02rem;
+  margin-bottom: 10px;
+}
+.assist-mic {
+  margin-top: 16px;
+  width: 72px;
+  height: 72px;
+}
+.assist-mic svg {
+  width: 30px;
+  height: 30px;
+}
+.assist-mic-label {
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+.assist-note {
+  margin-top: 10px;
+  margin-bottom: 14px;
+}
+.assist-card {
+  padding-top: 10px;
+}
