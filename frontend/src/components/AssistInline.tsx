@@ -106,7 +106,6 @@ export function AssistInline({ assist, onExpand }: Props) {
         </svg>
       </button>
       {card.question && <p className="assist-quote">“{card.question}”</p>}
-      {card.needs_supervisor && <span className="assist-flag">담당자 확인 필요</span>}
       <TypedAnswer card={card} onDone={setTypedDone} onType={followTyping} />
       {typedDone && (card.figure || card.owner) && (
         <div className="mini-actions">

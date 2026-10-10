@@ -127,7 +127,6 @@ export function AssistSheet({ assist, onClose: close }: Props) {
         {card ? (
           <section className="assist-card" aria-live="polite">
             {card.question && <p className="assist-quote">“{card.question}”</p>}
-            {card.needs_supervisor && <span className="assist-flag">담당자 확인 필요</span>}
             <p className="assist-headline">{card.headline}</p>
             {card.details.length > 0 && (
               <ul className="assist-details">
