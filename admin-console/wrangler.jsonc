@@ -1,0 +1,8 @@
+// Cloudflare 배포 설정 (정적 사이트). `npm run build:demo` 결과인 dist 폴더를 그대로 올린다.
+{
+  "name": "ovot-admin",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}

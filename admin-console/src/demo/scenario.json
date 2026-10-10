@@ -1,0 +1,61 @@
+{
+  "_note": "DEMO 및 테스트 DB 전용 샘플 데이터. 'CASE 대본 스크립트'의 CASE 1~5 를 근거로 구성했다. 실제 운영 데이터가 아니다. 작업자는 실명 대신 ID 만 사용한다.",
+  "tasks": [
+    { "task_id": "T-101", "block_id": "P-1", "zone_id": "ZONE-A", "task_type": "보강재 취부", "status": "DONE", "updated_at": "11:18" },
+    { "task_id": "T-105", "block_id": "P-1", "zone_id": "ZONE-A", "task_type": "판재 반입·크레인 인양", "status": "DONE", "updated_at": "09:52" },
+    { "task_id": "T-102", "block_id": "P-1", "zone_id": "ZONE-B", "task_type": "보강재 본용접", "status": "DONE", "updated_at": "16:50" },
+    { "task_id": "T-104", "block_id": "P-2", "zone_id": "ZONE-B", "task_type": "용접 마무리", "status": "DONE", "updated_at": "13:08" },
+    { "task_id": "T-103", "block_id": "P-1", "zone_id": "ZONE-C", "task_type": "용접부 검사", "status": "PENDING", "updated_at": "17:30" }
+  ],
+  "voice_records": [
+    { "voice_id": "V-101", "worker_id": "W-101", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "07:51", "transcript": "오늘 P-1 블록 작업 들어갑니다. 어제 외판 자리 잡아놨고, 오늘은 안쪽 보강재 취부부터 할 거예요." },
+    { "voice_id": "V-102", "worker_id": "W-102", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "07:52", "transcript": "3번 보강재 위치만 잡아놨습니다. 아직 가접은 안 했고요. 한쪽 끝이 도면 치수보다 조금 벌어져 있어서 오늘 다시 맞춰야 됩니다." },
+    { "voice_id": "V-103", "worker_id": "W-104", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-105", "at": "07:54", "transcript": "반장님, 오전에 P-1 옆으로 판재 하나 더 들어옵니다. 크레인 동선 겹칠 것 같은데요. 아홉 시 반쯤이요." },
+    { "voice_id": "V-104", "worker_id": "W-101", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-105", "at": "07:55", "transcript": "그럼 그 시간에는 아래쪽 작업 잠깐 비워야겠네. 판재 들어올 때 인양 구역 아래로 들어가지 마세요." },
+    { "voice_id": "V-105", "worker_id": "W-101", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-102", "at": "07:57", "transcript": "아니요. 취부 검사 먼저 받아야죠. 검사 통과하면 본용접 들어가세요." },
+    { "voice_id": "V-106", "worker_id": "W-106", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "07:59", "transcript": "일단 열한 시 목표로 잡고, 늦어질 것 같으면 미리 이야기해 주세요. 검사팀 일정도 맞춰야 하니까." },
+    { "voice_id": "V-107", "worker_id": "W-102", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "08:31", "transcript": "여기 3번 보강재 끝단이 자꾸 뜹니다. 기준선은 맞는데 끝단 간격이 6밀리 정도 나옵니다." },
+    { "voice_id": "V-108", "worker_id": "W-101", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "08:34", "transcript": "3번 보강재는 잠깐 대기하고, 옆에 4번 보강재부터 치수 확인하세요. 이상 없으면 취부 진행하세요." },
+    { "voice_id": "V-109", "worker_id": "W-101", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "08:56", "transcript": "3번 보강재는 조정 방법 확인됐어요. 작업 기준대로 위치 다시 맞추고, 조정 후 치수 재확인하고 가접하세요." },
+    { "voice_id": "V-110", "worker_id": "W-101", "zone_id": "ZONE-A", "block_id": "P-1", "task_id": "T-101", "at": "11:20", "transcript": "이 반장님, P-1 블록 3번, 4번 보강재 취부 끝났습니다. 검사도 통과했고요. 용접팀 언제 들어올 수 있어요?" },
+    { "voice_id": "V-111", "worker_id": "W-201", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-102", "at": "11:22", "transcript": "저희가 지금 P-2 용접이 조금 밀려서 바로는 못 들어가요. 점심 먹고 한 시쯤은 가능할 것 같습니다. 확정은 아니고요." },
+    { "voice_id": "V-112", "worker_id": "W-106", "zone_id": null, "block_id": "P-1", "task_id": "T-102", "at": "11:26", "transcript": "그러면 P-1은 오후 한 시 반 착수 목표로 잡죠. 대신 P-2 끝나면 바로 알려주세요." },
+    { "voice_id": "V-113", "worker_id": "W-201", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-102", "at": "13:10", "transcript": "김 반장님, P-2 작업 끝났어요. 이제 P-1 들어갈 준비하겠습니다." },
+    { "voice_id": "V-114", "worker_id": "W-202", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-102", "at": "16:31", "transcript": "반장님, P-1 3번 보강재 용접 끝났습니다. 4번도 끝났습니다. 근데 3번 끝단 쪽 비드가 조금 높게 나왔어요." },
+    { "voice_id": "V-115", "worker_id": "W-203", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-102", "at": "16:46", "transcript": "반장님, 3번 끝단 정리했습니다. 스패터도 같이 정리했어요. 한번 봐주세요." },
+    { "voice_id": "V-116", "worker_id": "W-201", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-103", "at": "16:49", "transcript": "P-1 용접 완료로 보고하고, 검사 요청 넣읍시다. 검사 결과 나올 때까지 다음 공정 인계는 대기하는 걸로 하죠." },
+    { "voice_id": "V-117", "worker_id": "W-201", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-103", "at": "17:01", "transcript": "정 기사님, P-1 블록 용접 끝났습니다. 3번하고 4번 보강재입니다. 검사 요청하려고 하는데요." },
+    { "voice_id": "V-118", "worker_id": "W-301", "zone_id": "ZONE-C", "block_id": "P-1", "task_id": "T-103", "at": "17:04", "transcript": "지금 다른 블록 검사 중이라 오늘은 어려울 것 같습니다. 내일 오전 일정 확인해 볼게요." },
+    { "voice_id": "V-119", "worker_id": "W-301", "zone_id": "ZONE-C", "block_id": "P-1", "task_id": "T-103", "at": "17:30", "transcript": "P-1 검사 요청서 확인했습니다. 내일 아홉 시 검사 일정 잡았습니다. 결과 확인 전에는 다음 공정으로 넘기지 마세요." },
+    { "voice_id": "V-120", "worker_id": "W-201", "zone_id": "ZONE-B", "block_id": "P-1", "task_id": "T-103", "at": "17:31", "transcript": "알겠습니다. 현장 준비해 놓겠습니다." }
+  ],
+  "events": [
+    { "voice_id": "V-101", "task_id": "T-101", "speech_type": "CMD", "event_type": "(WS) ASSIGN", "event_status": "CONFIRMED", "summary": "P-1 블록 내부 보강재 취부 작업 배정", "at": "07:52" },
+    { "voice_id": "V-102", "task_id": "T-101", "speech_type": "RPT", "event_type": "(WP) PROGRESS", "event_status": "CONFIRMED", "summary": "3번 보강재 위치만 확보, 가접 전. 끝단 치수 오차 의심(약 5mm, 재측정 필요)", "at": "07:53" },
+    { "voice_id": "V-103", "task_id": "T-105", "speech_type": "RPT", "event_type": "(SM) HAZARD", "event_status": "NEEDS_CONFIRMATION", "summary": "09:30경 판재 반입 예정. P-1 작업 위치와 크레인 인양 동선이 겹칠 수 있음", "at": "07:55" },
+    { "voice_id": "V-104", "task_id": "T-105", "speech_type": "CMD", "event_type": "(SM) SAFETY_CHECK", "event_status": "CONFIRMED", "summary": "판재 반입 시 인양 구역 하부 출입 금지 지시", "at": "07:56" },
+    { "voice_id": "V-105", "task_id": "T-102", "speech_type": "CMD", "event_type": "(WI) INSTRUCT", "event_status": "PENDING_VALIDATION", "summary": "취부 검사 통과 후 본용접 착수하도록 지시", "at": "07:58" },
+    { "voice_id": "V-106", "task_id": "T-101", "speech_type": "CMD", "event_type": "(WI) INSTRUCT", "event_status": "PENDING_VALIDATION", "summary": "P-1 취부 완료 목표 11:00. 지연 예상 시 사전 보고", "at": "08:00" },
+    { "voice_id": "V-107", "task_id": "T-101", "speech_type": "RPT", "event_type": "(WP) BLOCKED", "event_status": "CONFIRMED", "summary": "3번 보강재 끝단 간격 약 6mm로 밀착 불량. 가접 불가", "at": "08:32" },
+    { "voice_id": "V-108", "task_id": "T-101", "speech_type": "CMD", "event_type": "(WI) PRIORITY", "event_status": "CONFIRMED", "summary": "3번 가접 보류, 4번 보강재 치수 확인 우선", "at": "08:35" },
+    { "voice_id": "V-109", "task_id": "T-101", "speech_type": "CMD", "event_type": "(WI) METHOD", "event_status": "PENDING_VALIDATION", "summary": "3번 위치 조정 → 치수 재확인 → 가접 순서로 진행 지시", "at": "08:57" },
+    { "voice_id": "V-110", "task_id": "T-101", "speech_type": "RPT", "event_type": "(WC) DONE", "event_status": "CONFIRMED", "summary": "P-1 3·4번 보강재 취부 및 취부 검사 완료", "at": "11:21" },
+    { "voice_id": "V-110", "task_id": "T-102", "speech_type": "QST", "event_type": "(CO) HANDOFF_REQ", "event_status": "CONFIRMED", "summary": "B구역 용접팀에 P-1 본용접 착수 가능 시각 문의", "at": "11:21" },
+    { "voice_id": "V-111", "task_id": "T-102", "speech_type": "RPT", "event_type": "(WP) DELAY", "event_status": "NEEDS_CONFIRMATION", "summary": "P-2 마무리로 P-1 본용접 착수 지연. 13:00경 가능(미확정)", "at": "11:23" },
+    { "voice_id": "V-112", "task_id": "T-102", "speech_type": "CMD", "event_type": "(WI) INSTRUCT", "event_status": "PENDING_VALIDATION", "summary": "P-1 본용접 착수 목표를 13:30으로 조정, P-2 완료 즉시 보고", "at": "11:27" },
+    { "voice_id": "V-113", "task_id": "T-104", "speech_type": "RPT", "event_type": "(WC) DONE", "event_status": "CONFIRMED", "summary": "P-2 용접 완료", "at": "13:11" },
+    { "voice_id": "V-113", "task_id": "T-102", "speech_type": "RPT", "event_type": "(WS) START", "event_status": "PENDING_VALIDATION", "summary": "P-1 본용접 착수 준비", "at": "13:11" },
+    { "voice_id": "V-114", "task_id": "T-102", "speech_type": "RPT", "event_type": "(WC) DONE", "event_status": "CONFIRMED", "summary": "P-1 3·4번 보강재 본용접 완료", "at": "16:32" },
+    { "voice_id": "V-114", "task_id": "T-102", "speech_type": "RPT", "event_type": "(QC) REWORK", "event_status": "NEEDS_CONFIRMATION", "summary": "3번 끝단 약 20cm 구간 비드 높음. 검사 기준 확인 후 사상 여부 판단 필요", "at": "16:32" },
+    { "voice_id": "V-115", "task_id": "T-102", "speech_type": "RPT", "event_type": "(WP) PROGRESS", "event_status": "PENDING_VALIDATION", "summary": "3번 끝단 사상 및 스패터 정리 완료, 확인 요청", "at": "16:47" },
+    { "voice_id": "V-116", "task_id": "T-103", "speech_type": "CMD", "event_type": "(QC) INSPECT_REQ", "event_status": "CONFIRMED", "summary": "P-1 용접 완료 보고 및 검사 요청. 검사 결과 전 후속 인계 대기", "at": "16:50" },
+    { "voice_id": "V-117", "task_id": "T-103", "speech_type": "RPT", "event_type": "(CO) HANDOFF_REQ", "event_status": "CONFIRMED", "summary": "C구역 검사팀에 P-1 3·4번 보강재 용접부 검사 요청", "at": "17:02" },
+    { "voice_id": "V-118", "task_id": "T-103", "speech_type": "RPT", "event_type": "(WP) DELAY", "event_status": "NEEDS_CONFIRMATION", "summary": "C구역 당일 검사 불가. 익일 오전 일정 확인 중", "at": "17:05" },
+    { "voice_id": "V-119", "task_id": "T-103", "speech_type": "ACK", "event_type": "(CO) HANDOFF_OK", "event_status": "PENDING_VALIDATION", "summary": "검사 요청서 접수. 익일 09:00 검사 예정", "at": "17:31" },
+    { "voice_id": "V-119", "task_id": "T-103", "speech_type": "CMD", "event_type": "(WI) INSTRUCT", "event_status": "NEEDS_CONFIRMATION", "summary": "검사 결과 확인 전 후속 공정 인계 금지", "at": "17:31" }
+  ],
+  "handoffs": [
+    { "task_id": "T-102", "from_zone_id": "ZONE-A", "to_zone_id": "ZONE-B", "status": "DONE", "requested_at": "11:21", "accepted_at": "11:27", "completed_at": "16:50" },
+    { "task_id": "T-103", "from_zone_id": "ZONE-B", "to_zone_id": "ZONE-C", "status": "ACCEPTED", "requested_at": "17:02", "accepted_at": "17:30", "completed_at": null }
+  ]
+}

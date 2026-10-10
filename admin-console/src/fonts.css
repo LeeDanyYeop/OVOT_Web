@@ -1,0 +1,5 @@
+/* Pretendard (OFL) — npm 패키지에서 4개 굵기만 묶어 배포. 인터넷 연결 없이도 같은 글꼴로 보인다. */
+@font-face { font-family: 'Pretendard'; font-weight: 400; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-Regular.woff2') format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 500; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 600; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2') format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 700; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-Bold.woff2') format('woff2'); }
