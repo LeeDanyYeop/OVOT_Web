@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { useSearchParams } from 'react-router-dom'
 import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../capture/voiceCapture'
 import { QrScanSheet } from '../components/QrScanSheet'
+import { AssistMini } from '../components/AssistMini'
 import { AssistSheet } from '../components/AssistSheet'
 import { InstallBanner } from '../components/InstallBanner'
 import { ProfileSheet } from '../components/ProfileSheet'
 import { SpeakingAvatar } from '../components/SpeakingAvatar'
 import { ApiError, api } from '../lib/api'
 import { unlockAudio } from '../lib/audio'
+import { useAssist } from '../lib/useAssist'
 import { useAuth } from '../lib/auth'
 import { cheerFor, currentHour, useSky } from '../lib/sky'
 import { AUTO_STOP_TEXT, OFF_HINT, OFF_LABEL, offHoursReason, type OffReason } from '../lib/workHours'
@@ -61,7 +63,9 @@ export function WorkerPage() {
   const [pendingUploads, setPendingUploads] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [assistOpen, setAssistOpen] = useState(false)
+  // 오봇: closed / full sheet / minimized to a floating mic (answers type out on the screen)
+  const [assistMode, setAssistMode] = useState<'closed' | 'open' | 'mini'>('closed')
+  const assist = useAssist(micStream)
   const [params, setParams] = useSearchParams()
 
   const nfcAbort = useRef<AbortController | null>(null)
@@ -166,6 +170,13 @@ export function WorkerPage() {
     return () => window.clearTimeout(t)
   }, [offInfo])
 
+  const { reset: resetAssist } = assist
+  useEffect(() => {
+    if (recording) return
+    setAssistMode('closed')
+    resetAssist()
+  }, [recording, resetAssist])
+
   // The worker view is a single fixed screen: lock page scroll / iOS rubber-band while it is open.
   useEffect(() => {
     document.documentElement.classList.add('no-scroll')
@@ -266,7 +277,7 @@ export function WorkerPage() {
 
   // The page canvas shows through any strip the OS leaves uncovered (iOS home-screen apps
   // leave one at the bottom). Paint it the colour of whatever is at the bottom of the screen.
-  const canvasColor = sheetOpen ? '#000000' : profileOpen ? '#f5f5f7' : assistOpen ? '#ffffff' : sky.bottom
+  const canvasColor = sheetOpen ? '#000000' : profileOpen ? '#f5f5f7' : assistMode === 'open' ? '#ffffff' : sky.bottom
   useEffect(() => {
     const html = document.documentElement
     html.style.backgroundColor = canvasColor
@@ -359,7 +370,7 @@ export function WorkerPage() {
             </p>
             <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
             <div className="w-actions w-actions-stack">
-              <button className="pill pill-dark pill-ask" onClick={() => setAssistOpen(true)}>
+              <button className="pill pill-dark pill-ask" onClick={() => setAssistMode('open')}>
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"
@@ -422,7 +433,26 @@ export function WorkerPage() {
       </footer>
 
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
-      {assistOpen && recording && <AssistSheet stream={micStream} onClose={() => setAssistOpen(false)} />}
+      {recording && assistMode === 'open' && (
+        <AssistSheet
+          assist={assist}
+          onMinimize={() => setAssistMode('mini')}
+          onClose={() => {
+            assist.reset()
+            setAssistMode('closed')
+          }}
+        />
+      )}
+      {recording && assistMode === 'mini' && (
+        <AssistMini
+          assist={assist}
+          onExpand={() => setAssistMode('open')}
+          onClose={() => {
+            assist.reset()
+            setAssistMode('closed')
+          }}
+        />
+      )}
       {sheetOpen && <QrScanSheet onScan={(c) => void submit(c, 'qr')} onClose={() => setSheetOpen(false)} />}
     </div>
   )

@@ -1,43 +1,39 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { startQuestionCapture, type QuestionCapture } from '../capture/questionCapture'
-import { ApiError, api } from '../lib/api'
-import type { AssistCard } from '../types'
+import type { Assist, QuickKind } from '../lib/useAssist'
 
 interface Props {
-  /** The microphone stream that is already streaming; questions are tapped from it. */
-  stream: MediaStream | null
+  assist: Assist
   onClose: () => void
+  /** Collapse to the floating mic; the conversation state is kept. */
+  onMinimize: () => void
 }
 
-type Talk = 'idle' | 'listening' | 'thinking'
-const HOLD_MS = 450 // shorter press = tap mode (tap again to send), for gloved hands
-const MIN_QUESTION_MS = 700
 const DISMISS_RATIO = 0.33 // drag past a third of the sheet height to close
 const FLICK_SPEED = 0.6 // px/ms — a fast downward flick also closes
 
-const QUICK: { kind: 'next' | 'tools' | 'cautions'; label: string }[] = [
+const QUICK: { kind: QuickKind; label: string }[] = [
   { kind: 'next', label: '다음 순서' },
   { kind: 'tools', label: '준비물' },
   { kind: 'cautions', label: '주의사항' },
 ]
 
 /** '오봇에게 물어보기': quick questions + push-to-talk, answered as one short card. */
-export function AssistSheet({ stream, onClose: close }: Props) {
-  const [talk, setTalk] = useState<Talk>('idle')
-  const [card, setCard] = useState<AssistCard | null>(null)
-  const [error, setError] = useState<string | null>(null)
+export function AssistSheet({ assist, onClose: close, onMinimize }: Props) {
+  const { talk, card, error, escalatedTo: escalated } = assist
   const [showFigure, setShowFigure] = useState(false)
   const [showRefs, setShowRefs] = useState(false)
-  const [escalated, setEscalated] = useState<string | null>(null)
-  const captureRef = useRef<QuestionCapture | null>(null)
-  const pressedAt = useRef(0)
   const sheetRef = useRef<HTMLDivElement>(null)
   const backdropRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ startY: number; startT: number; dy: number } | null>(null)
   const closingRef = useRef(false)
 
-  // Slide the sheet down, then unmount it.
-  const onClose = useCallback(() => {
+  useEffect(() => {
+    setShowFigure(!!card?.show_figure)
+    setShowRefs(false)
+  }, [card])
+
+  // Slide the sheet down, then run `then` (close or minimize).
+  const slideAway = useCallback((then: () => void) => {
     if (closingRef.current) return
     closingRef.current = true
     const sheet = sheetRef.current
@@ -50,8 +46,10 @@ export function AssistSheet({ stream, onClose: close }: Props) {
       backdrop.style.transition = 'opacity 0.22s ease-in'
       backdrop.style.opacity = '0'
     }
-    window.setTimeout(close, 210)
-  }, [close])
+    window.setTimeout(then, 210)
+  }, [])
+  const onClose = useCallback(() => slideAway(close), [slideAway, close])
+  const minimize = useCallback(() => slideAway(onMinimize), [slideAway, onMinimize])
 
   // Swipe down on the grabber/header to dismiss (iOS sheet behaviour).
   const onDragStart = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -94,102 +92,12 @@ export function AssistSheet({ stream, onClose: close }: Props) {
     }
   }
 
-  useEffect(() => {
-    return () => captureRef.current?.cancel()
-  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
-
-  const show = (c: AssistCard) => {
-    setCard(c)
-    setShowFigure(c.show_figure)
-    setShowRefs(false)
-    setEscalated(c.escalated ? c.owner ?? '담당자' : null)
-    setTalk('idle')
-  }
-
-  const ask = async (kind: 'next' | 'tools' | 'cautions') => {
-    setError(null)
-    setTalk('thinking')
-    try {
-      show(await api.assistQuick(kind))
-    } catch (err) {
-      setTalk('idle')
-      setError(err instanceof ApiError ? err.message : '답변을 가져오지 못했어요')
-    }
-  }
-
-  const beginListening = () => {
-    if (!stream) {
-      setError('스트리밍 중일 때 음성으로 물어볼 수 있어요')
-      return
-    }
-    try {
-      captureRef.current = startQuestionCapture(stream)
-    } catch (err) {
-      setError((err as Error).message)
-      return
-    }
-    setError(null)
-    setCard(null)
-    setTalk('listening')
-    try {
-      navigator.vibrate?.(30)
-    } catch {
-      /* unsupported */
-    }
-  }
-
-  const finishListening = async () => {
-    const cap = captureRef.current
-    captureRef.current = null
-    if (!cap) return
-    const { blob, durationMs } = await cap.stop()
-    if (durationMs < MIN_QUESTION_MS) {
-      setTalk('idle')
-      setError('조금 더 길게 말씀해 주세요')
-      return
-    }
-    setTalk('thinking')
-    try {
-      show(await api.assistAsk(blob, durationMs))
-    } catch (err) {
-      setTalk('idle')
-      setError(err instanceof ApiError ? err.message : '질문을 보내지 못했어요')
-    }
-  }
-
-  const onPressStart = () => {
-    if (talk === 'thinking') return
-    if (talk === 'listening') {
-      void finishListening() // tap mode: second tap sends
-      return
-    }
-    pressedAt.current = Date.now()
-    beginListening()
-  }
-  const onPressEnd = () => {
-    if (talk === 'listening' && pressedAt.current && Date.now() - pressedAt.current >= HOLD_MS) {
-      pressedAt.current = 0
-      void finishListening() // hold mode: release sends
-    } else {
-      pressedAt.current = 0 // short tap: keep listening until the next tap
-    }
-  }
-
-  const escalate = async () => {
-    if (!card) return
-    try {
-      const r = await api.assistEscalate(card.log_id)
-      setEscalated(r.owner ?? '담당자')
-    } catch {
-      setError('요청을 보내지 못했어요')
-    }
-  }
 
   return (
     <div className="assist-backdrop" ref={backdropRef} onClick={onClose}>
@@ -211,6 +119,18 @@ export function AssistSheet({ stream, onClose: close }: Props) {
           <div className="assist-grab" aria-hidden="true" />
           <header className="assist-head">
             <h2 className="assist-title">오봇에게 물어보기</h2>
+            <button className="assist-x assist-min" onClick={minimize} aria-label="작게 보기 (마이크만 남기기)">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M14 10l6-6M14 10V5.5M14 10h4.5M10 14l-6 6M10 14v4.5M10 14H5.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
             <button className="assist-x" onClick={onClose} aria-label="닫기">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
@@ -258,7 +178,7 @@ export function AssistSheet({ stream, onClose: close }: Props) {
               {card.owner && (
                 <button
                   className={`assist-chip ${card.needs_supervisor && !escalated ? 'is-primary' : ''}`}
-                  onClick={() => void escalate()}
+                  onClick={() => void assist.escalate()}
                   disabled={!!escalated}
                 >
                   {escalated ? `요청했어요 · ${escalated}` : '담당자에게 확인'}
@@ -266,7 +186,7 @@ export function AssistSheet({ stream, onClose: close }: Props) {
               )}
             </div>
             <div className="assist-foot">
-              <button className="assist-link" onClick={() => setCard(null)}>
+              <button className="assist-link" onClick={assist.clearCard}>
                 다른 질문
               </button>
               <button className="pill pill-dark" onClick={onClose}>
@@ -279,18 +199,14 @@ export function AssistSheet({ stream, onClose: close }: Props) {
             <p className="assist-q">이 작업에서 무엇이 궁금하세요?</p>
             <div className="assist-quick">
               {QUICK.map((q) => (
-                <button key={q.kind} className="assist-chip" disabled={talk !== 'idle'} onClick={() => void ask(q.kind)}>
+                <button key={q.kind} className="assist-chip" disabled={talk !== 'idle'} onClick={() => void assist.ask(q.kind)}>
                   {q.label}
                 </button>
               ))}
             </div>
             <button
               className={`assist-mic is-${talk}`}
-              onPointerDown={onPressStart}
-              onPointerUp={onPressEnd}
-              onPointerLeave={onPressEnd}
-              onPointerCancel={onPressEnd}
-              onContextMenu={(e) => e.preventDefault()}
+              {...assist.press}
               disabled={talk === 'thinking'}
               aria-label="직접 질문"
             >
@@ -304,7 +220,6 @@ export function AssistSheet({ stream, onClose: close }: Props) {
                 {talk === 'listening' ? '듣고 있어요 · 손을 떼거나 다시 누르면 질문해요' : '오봇이 확인하고 있어요…'}
               </p>
             )}
-            <p className="assist-note">스트리밍은 끊기지 않고 계속돼요</p>
           </section>
         )}
         {error && <p className="assist-error">{error}</p>}
