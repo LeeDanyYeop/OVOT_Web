@@ -1375,3 +1375,26 @@ code,
 .w .install-banner {
   backdrop-filter: blur(20px);
 }
+
+/* off-hours (lunch / after work) */
+.w-notice.is-info {
+  color: var(--text);
+}
+.w-off {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 980px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a35200;
+  background: rgba(255, 244, 229, 0.85);
+}
+.w.is-night .w-notice.is-info,
+.w.is-night .w-notice.is-ok {
+  color: #f5f5f7;
+}
+.w.is-night .w-off {
+  color: #ffd29a;
+  background: rgba(0, 0, 0, 0.28);
+}

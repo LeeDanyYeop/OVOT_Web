@@ -8,13 +8,14 @@ import { SpeakingAvatar } from '../components/SpeakingAvatar'
 import { ApiError, api } from '../lib/api'
 import { unlockAudio } from '../lib/audio'
 import { useAuth } from '../lib/auth'
-import { cheerFor, useSky } from '../lib/sky'
+import { cheerFor, currentHour, useSky } from '../lib/sky'
+import { AUTO_STOP_TEXT, OFF_HINT, OFF_LABEL, offHoursReason } from '../lib/workHours'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
 import { extractTagCode } from '../scan/tagCode'
 import type { CheckInSource } from '../types'
 
 type NfcState = 'idle' | 'listening' | 'unsupported' | 'insecure' | 'error'
-type Notice = { kind: 'ok' | 'error'; text: string } | null
+type Notice = { kind: 'ok' | 'info' | 'error'; text: string } | null
 
 const ERROR_TEXT: Record<string, string> = {
   UNKNOWN_TAG: '등록되지 않은 태그입니다',
@@ -102,6 +103,11 @@ export function WorkerPage() {
   // ---- recording ----
   const startRecording = useCallback(async () => {
     if (recorderRef.current?.active) return
+    const off = offHoursReason(currentHour())
+    if (off) {
+      setNotice({ kind: 'info', text: `${OFF_LABEL[off]}에는 스트리밍이 꺼집니다. 위치만 등록했어요.` })
+      return
+    }
     if (!voiceCaptureSupported()) {
       setNotice({ kind: 'error', text: '이 기기에서는 스트리밍을 지원하지 않습니다' })
       return
@@ -149,6 +155,20 @@ export function WorkerPage() {
     const t = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(t)
   }, [recording])
+
+  // Lunch and after-work: stop streaming automatically.
+  useEffect(() => {
+    if (!recording) return
+    const check = () => {
+      const off = offHoursReason(currentHour())
+      if (!off) return
+      stopRecording()
+      setNotice({ kind: 'info', text: AUTO_STOP_TEXT[off] })
+    }
+    check()
+    const t = window.setInterval(check, 30_000)
+    return () => window.clearInterval(t)
+  }, [recording, stopRecording])
 
   // ---- check-in ----
   const submit = useCallback(
@@ -225,6 +245,7 @@ export function WorkerPage() {
   }
 
   const sky = useSky()
+  const offNow = offHoursReason(sky.hour)
   const needsTap = nfcState === 'idle' || nfcState === 'error'
   const noNfc = nfcState === 'unsupported' || nfcState === 'insecure'
 
@@ -318,10 +339,11 @@ export function WorkerPage() {
                   : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
             </p>
             <p className="w-cheer">{cheerFor(sky.hour)}</p>
+            {offNow && <p className="w-off">{OFF_HINT[offNow]}</p>}
           </>
         )}
 
-        {notice && <p className={`w-notice ${notice.kind === 'error' ? 'is-error' : ''}`}>{notice.text}</p>}
+        {notice && <p className={`w-notice is-${notice.kind}`}>{notice.text}</p>}
         {pendingUploads > 0 && <p className="w-quiet">업로드 대기 {pendingUploads}건 · 연결되면 자동 전송</p>}
       </main>
 

@@ -67,9 +67,10 @@ export function skyAt(hour: number): Sky {
   return { hour: h, top: mix(t0, t1, t), bottom: mix(b0, b1, t), night, glowX, glowY, glow }
 }
 
-/** Current local hour as a fraction (e.g. 18.5). `?sky=18.5` overrides it for demos. */
-function currentHour(): number {
-  const forced = new URLSearchParams(window.location.search).get('sky')
+/** Current local hour as a fraction (e.g. 18.5). `?time=18.5` (or `?sky=`) overrides it for demos. */
+export function currentHour(): number {
+  const params = new URLSearchParams(window.location.search)
+  const forced = params.get('time') ?? params.get('sky')
   if (forced !== null && forced !== '' && !Number.isNaN(Number(forced))) return Number(forced)
   const d = new Date()
   return d.getHours() + d.getMinutes() / 60
