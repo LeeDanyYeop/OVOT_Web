@@ -60,7 +60,6 @@ export function WorkerPage() {
   const [notice, setNotice] = useState<Notice>(null)
   // Full-screen 'not working hours' message after an off-hours tag or an automatic stop.
   const [offInfo, setOffInfo] = useState<{ reason: OffReason; autoStopped: boolean } | null>(null)
-  const [pendingUploads, setPendingUploads] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   // 오봇: closed / full sheet / minimized to a floating mic (answers type out on the screen)
@@ -95,7 +94,6 @@ export function WorkerPage() {
       }
     } finally {
       flushingRef.current = false
-      setPendingUploads(queueRef.current.length)
     }
   }, [])
 
@@ -123,7 +121,6 @@ export function WorkerPage() {
     const rec = new SegmentRecorder(
       (clip) => {
         queueRef.current.push(clip)
-        setPendingUploads(queueRef.current.length)
         void flush()
       },
       () => eventIdRef.current,
@@ -419,7 +416,6 @@ export function WorkerPage() {
         )}
 
         {notice && <p className={`w-notice is-${notice.kind}`}>{notice.text}</p>}
-        {pendingUploads > 0 && <p className="w-quiet">업로드 대기 {pendingUploads}건 · 연결되면 자동 전송</p>}
       </main>
 
       <footer className="w-foot">
