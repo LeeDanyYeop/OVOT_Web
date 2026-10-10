@@ -5,6 +5,7 @@ only sees the worker's current work context; anything outside the guide or any s
 quality judgement is routed to the responsible person instead of being answered.
 """
 
+import asyncio
 import base64
 import json
 import logging
@@ -15,6 +16,7 @@ from .. import config
 
 log = logging.getLogger(__name__)
 
+RETRYABLE = {429, 500, 502, 503, 504}
 ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 INSTRUCTIONS = """너는 조선소 현장 작업 도우미 '오봇'이다. 작업자가 음성으로 질문했다.
@@ -58,15 +60,30 @@ async def answer_voice(audio: bytes, mime: str, context: dict) -> dict:
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
     }
     url = ENDPOINT.format(model=config.GEMINI_MODEL)
-    try:
-        async with httpx.AsyncClient(timeout=40) as client:
-            res = await client.post(url, json=body, headers={"x-goog-api-key": config.GEMINI_API_KEY})
-        res.raise_for_status()
-        text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-        data = json.loads(text)
-    except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
-        log.warning("assist AI call failed: %s", exc)
-        raise AssistUnavailable("AI 응답을 받지 못했습니다") from exc
+    data = None
+    last_exc: Exception | None = None
+    # The model endpoint is occasionally overloaded (429/5xx); retry briefly before giving up.
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=40) as client:
+                res = await client.post(url, json=body, headers={"x-goog-api-key": config.GEMINI_API_KEY})
+            if res.status_code in RETRYABLE and attempt < 2:
+                await asyncio.sleep(0.8 * (attempt + 1))
+                continue
+            res.raise_for_status()
+            text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
+            data = json.loads(text)
+            break
+        except httpx.TimeoutException as exc:
+            last_exc = exc
+            if attempt < 2:
+                continue
+        except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
+            last_exc = exc
+            break
+    if data is None:
+        log.warning("assist AI call failed: %s", last_exc)
+        raise AssistUnavailable("AI 응답을 받지 못했습니다")
 
     return {
         "transcript": str(data.get("transcript") or "").strip(),

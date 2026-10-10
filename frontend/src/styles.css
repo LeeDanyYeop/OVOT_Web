@@ -2242,3 +2242,74 @@ html.no-scroll body {
 .mini-bubble .assist-chip {
   padding: 0 12px;
 }
+
+/* ---- 오봇 push-to-talk button + inline typed answer ---- */
+.pill-ask {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: background 0.2s, transform 0.12s;
+}
+.w .pill-ask.is-listening,
+.w.is-night .pill-ask.is-listening {
+  background: #ff3b30;
+  color: #fff;
+  transform: scale(1.04);
+  animation: mic-pulse 1.2s ease-in-out infinite;
+}
+.w .pill-ask.is-thinking,
+.w.is-night .pill-ask.is-thinking {
+  opacity: 0.8;
+}
+.assist-inline {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 34cqh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  margin-top: 6px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  text-align: left;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 36px -16px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: sheet-up 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.assist-inline::-webkit-scrollbar {
+  display: none;
+}
+.assist-inline.is-status {
+  text-align: center;
+  align-items: center;
+}
+.assist-inline .assist-quote,
+.assist-inline .assist-flag {
+  margin-right: 36px;
+}
+.assist-inline .mini-headline {
+  font-size: 1.05rem;
+}
+.assist-inline .assist-chip {
+  min-height: 40px;
+}
+
+/* while an answer is on screen, make room for it */
+.w-stage.has-answer {
+  --speaker: clamp(64px, 14cqh, 120px);
+  gap: clamp(4px, 1.1cqh, 10px);
+}
+.w-stage.has-answer .w-title {
+  font-size: clamp(1.4rem, 5.6cqh, 2.4rem);
+}
+.w-stage.has-answer .w-timer {
+  font-size: clamp(1.1rem, 4cqh, 1.6rem);
+}
+.w-stage.has-answer .w-actions {
+  margin-top: 4px;
+}

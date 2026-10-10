@@ -4,8 +4,6 @@ import type { Assist, QuickKind } from '../lib/useAssist'
 interface Props {
   assist: Assist
   onClose: () => void
-  /** Collapse to the floating mic; the conversation state is kept. */
-  onMinimize: () => void
 }
 
 const DISMISS_RATIO = 0.33 // drag past a third of the sheet height to close
@@ -18,7 +16,7 @@ const QUICK: { kind: QuickKind; label: string }[] = [
 ]
 
 /** '오봇에게 물어보기': quick questions + push-to-talk, answered as one short card. */
-export function AssistSheet({ assist, onClose: close, onMinimize }: Props) {
+export function AssistSheet({ assist, onClose: close }: Props) {
   const { talk, card, error, escalatedTo: escalated } = assist
   const [showFigure, setShowFigure] = useState(false)
   const [showRefs, setShowRefs] = useState(false)
@@ -49,7 +47,6 @@ export function AssistSheet({ assist, onClose: close, onMinimize }: Props) {
     window.setTimeout(then, 210)
   }, [])
   const onClose = useCallback(() => slideAway(close), [slideAway, close])
-  const minimize = useCallback(() => slideAway(onMinimize), [slideAway, onMinimize])
 
   // Swipe down on the grabber/header to dismiss (iOS sheet behaviour).
   const onDragStart = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -119,18 +116,6 @@ export function AssistSheet({ assist, onClose: close, onMinimize }: Props) {
           <div className="assist-grab" aria-hidden="true" />
           <header className="assist-head">
             <h2 className="assist-title">오봇에게 물어보기</h2>
-            <button className="assist-x assist-min" onClick={minimize} aria-label="작게 보기 (마이크만 남기기)">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M14 10l6-6M14 10V5.5M14 10h4.5M10 14l-6 6M10 14v4.5M10 14H5.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
             <button className="assist-x" onClick={onClose} aria-label="닫기">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />

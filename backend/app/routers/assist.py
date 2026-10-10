@@ -141,7 +141,7 @@ async def assist_ask(
     except AssistUnavailable:
         result = {
             "headline": "지금은 음성 질문에 답할 수 없어요.",
-            "details": ["‘다른 질문’에서 빠른 질문을 이용하거나 담당자에게 확인하세요", "질문 음성은 저장되어 담당자가 들을 수 있어요"],
+            "details": ["잠시 후 다시 물어보거나 담당자에게 확인하세요", "질문 음성은 저장되어 담당자가 들을 수 있어요"],
             "needs_supervisor": True,
         }
         source = "fallback"

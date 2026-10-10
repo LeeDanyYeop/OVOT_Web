@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import { useSearchParams } from 'react-router-dom'
 import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../capture/voiceCapture'
 import { QrScanSheet } from '../components/QrScanSheet'
-import { AssistMini } from '../components/AssistMini'
+import { AssistInline } from '../components/AssistInline'
 import { AssistSheet } from '../components/AssistSheet'
 import { InstallBanner } from '../components/InstallBanner'
 import { ProfileSheet } from '../components/ProfileSheet'
@@ -63,7 +63,8 @@ export function WorkerPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   // 오봇: closed / full sheet / minimized to a floating mic (answers type out on the screen)
-  const [assistMode, setAssistMode] = useState<'closed' | 'open' | 'mini'>('closed')
+  // 오봇 answers show inline under the button; 'open' = full sheet for the figure / references
+  const [assistMode, setAssistMode] = useState<'closed' | 'open'>('closed')
   const assist = useAssist(micStream)
   const [params, setParams] = useSearchParams()
 
@@ -317,7 +318,7 @@ export function WorkerPage() {
 
       {!recording && <InstallBanner />}
 
-      <main className="w-stage" aria-live="polite">
+      <main className={`w-stage ${recording && (assist.card || assist.talk !== 'idle' || assist.error) ? 'has-answer' : ''}`} aria-live="polite">
         {pendingTag ? (
           <>
             <h1 className="w-title">위치를 등록할까요?</h1>
@@ -365,9 +366,17 @@ export function WorkerPage() {
             <p className="w-timer" aria-label="스트리밍 시간">
               {mmss(now - recStartedAt)}
             </p>
-            <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
+            {assist.talk === 'idle' && !assist.card && !assist.error && (
+              <p className="w-sub">구역을 옮길 때마다 해당 구역의 태그를 인식하세요</p>
+            )}
             <div className="w-actions w-actions-stack">
-              <button className="pill pill-dark pill-ask" onClick={() => setAssistMode('open')}>
+              {/* push-to-talk: hold, speak, release (or tap, speak, tap again) */}
+              <button
+                className={`pill pill-dark pill-ask is-${assist.talk}`}
+                {...assist.press}
+                disabled={assist.talk === 'thinking'}
+                aria-label="오봇에게 물어보기 · 누른 채 말하고 떼면 질문"
+              >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"
@@ -377,12 +386,14 @@ export function WorkerPage() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                오봇에게 물어보기
-              </button>
-              <button className="pill pill-light" onClick={stopRecording}>
-                스트리밍 종료
+                {assist.talk === 'listening'
+                  ? '듣고 있어요 · 떼면 질문'
+                  : assist.talk === 'thinking'
+                    ? '오봇이 확인 중…'
+                    : '오봇에게 물어보기'}
               </button>
             </div>
+            <AssistInline assist={assist} onExpand={() => setAssistMode('open')} />
           </>
         ) : (
           <>
@@ -432,21 +443,7 @@ export function WorkerPage() {
       {recording && assistMode === 'open' && (
         <AssistSheet
           assist={assist}
-          onMinimize={() => setAssistMode('mini')}
-          onClose={() => {
-            assist.reset()
-            setAssistMode('closed')
-          }}
-        />
-      )}
-      {recording && assistMode === 'mini' && (
-        <AssistMini
-          assist={assist}
-          onExpand={() => setAssistMode('open')}
-          onClose={() => {
-            assist.reset()
-            setAssistMode('closed')
-          }}
+          onClose={() => setAssistMode('closed')}
         />
       )}
       {sheetOpen && <QrScanSheet onScan={(c) => void submit(c, 'qr')} onClose={() => setSheetOpen(false)} />}
