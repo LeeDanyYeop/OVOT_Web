@@ -309,13 +309,11 @@ export function AssistSheet({ stream, onClose: close }: Props) {
                 <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </button>
-            <p className="assist-mic-label">
-              {talk === 'listening'
-                ? '듣고 있어요 · 손을 떼거나 다시 누르면 질문해요'
-                : talk === 'thinking'
-                  ? '오봇이 확인하고 있어요…'
-                  : '직접 질문 · 누른 채로 말하세요'}
-            </p>
+            {talk !== 'idle' && (
+              <p className="assist-mic-label">
+                {talk === 'listening' ? '듣고 있어요 · 손을 떼거나 다시 누르면 질문해요' : '오봇이 확인하고 있어요…'}
+              </p>
+            )}
             <p className="assist-note">스트리밍은 끊기지 않고 계속돼요</p>
           </section>
         )}
