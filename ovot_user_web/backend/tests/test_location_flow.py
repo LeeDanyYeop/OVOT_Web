@@ -1,5 +1,10 @@
+import io
 from datetime import timedelta
 
+import av
+import numpy as np
+
+from app import config
 from app.db import SessionLocal
 from app.models import LocationEvent, TagScanFailure, WorkerCurrentLocation
 from app.timeutil import utcnow
@@ -262,3 +267,34 @@ def test_start_handover_lists_yesterday_and_today(client):
     assert body["summary"]["yesterday"] and body["summary"]["watch"]
     # reading the handover does not register a location by itself
     assert client.get("/api/location/current", headers=worker).json()["current_location"]["zone"]["id"] == "ZONE-OUT"
+
+
+def _tone_webm(seconds: float) -> bytes:
+    """A real Opus/WebM segment like the phone's MediaRecorder sends."""
+    buf = io.BytesIO()
+    with av.open(buf, "w", format="webm") as out:
+        stream = out.add_stream("libopus", rate=48000, layout="mono")
+        samples = (np.sin(np.arange(int(48000 * seconds)) / 20) * 8000).astype(np.int16)
+        frame = av.AudioFrame.from_ndarray(samples.reshape(1, -1), format="s16", layout="mono")
+        frame.rate = 48000
+        out.mux(stream.encode(frame))
+        out.mux(stream.encode(None))
+    return buf.getvalue()
+
+
+def test_end_workday_merges_the_days_voice_into_one_file(client):
+    worker = login(client, "1001")
+    client.post("/api/location/check-in", json={"tag_code": "OVOT-ZONE-A-001", "source": "nfc"}, headers=worker)
+    for seconds in (2, 3):
+        res = client.post("/api/voice/clips", content=_tone_webm(seconds), headers={**worker, "Content-Type": "audio/webm"})
+        assert res.status_code == 200, res.text
+    # a segment cut off mid-upload must not lose the rest of the day
+    client.post("/api/voice/clips", content=b"not-really-webm", headers={**worker, "Content-Type": "audio/webm"})
+
+    body = client.post("/api/workday/end", headers=worker).json()
+    daily = body["daily_audio"]
+    assert daily["clips"] == 2 and daily["file"].startswith("W-001_") and daily["file"].endswith(".webm")
+    merged = config.AUDIO_DIR / "W-001" / "daily" / daily["file"]
+    with av.open(str(merged)) as inp:
+        total = sum(f.samples for f in inp.decode(audio=0)) / 48000
+    assert 4.5 < total < 5.5
