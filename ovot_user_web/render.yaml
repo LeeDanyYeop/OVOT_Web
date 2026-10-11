@@ -1,0 +1,15 @@
+# Render Blueprint: New → Blueprint → 이 저장소 선택 → Apply
+services:
+  - type: web
+    name: ovot
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: singapore        # 한국에서 가장 가까운 지역
+    plan: free               # 무료: 15분 미사용 시 잠들고, 첫 접속에 30~60초 걸림
+    healthCheckPath: /api/health
+    envVars:
+      - key: OVOT_DEMO_MODE
+        value: "1"
+      - key: OVOT_DUPLICATE_WINDOW_SECONDS
+        value: "30"
