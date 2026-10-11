@@ -62,6 +62,7 @@ export function WorkerPage() {
   const [offInfo, setOffInfo] = useState<{ reason: OffReason; autoStopped: boolean } | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [photoOk, setPhotoOk] = useState(true)
   // 오봇: closed / full sheet / minimized to a floating mic (answers type out on the screen)
   // 오봇 answers show inline under the button; 'open' = full sheet for the figure / references
   const [assistMode, setAssistMode] = useState<'closed' | 'open'>('closed')
@@ -400,7 +401,7 @@ export function WorkerPage() {
           <>
             <button
               type="button"
-              className={`nfc-orb ${nfcState === 'listening' ? 'is-listening' : ''} ${busy ? 'is-busy' : ''}`}
+              className={`nfc-orb w-photo ${nfcState === 'listening' ? 'is-listening' : ''} ${busy ? 'is-busy' : ''}`}
               onClick={
                 needsTap
                   ? () => {
@@ -410,35 +411,51 @@ export function WorkerPage() {
                   : undefined
               }
               disabled={!needsTap}
-              aria-label={needsTap ? 'NFC 스캔 시작' : 'NFC 태그 대기 중'}
+              aria-label={needsTap ? 'NFC 스캔 시작' : noNfc ? '내 사진' : 'NFC 태그 대기 중'}
             >
-              <img className="nfc-mark" src="/nfc-mark.png" alt="" width={96} height={96} />
+              {photoOk ? (
+                <img src={`/avatars/${me?.id ?? 'unknown'}.jpg`} alt="" onError={() => setPhotoOk(false)} />
+              ) : (
+                <span className="speaker-initial">{me?.name.slice(0, 1)}</span>
+              )}
             </button>
-            <h1 className="w-title">{busy ? '등록 중…' : noNfc ? 'NFC를 쓸 수 없는 기기입니다' : 'NFC 태그를 대세요'}</h1>
+            <h1 className="w-title">
+              {busy ? '등록 중…' : noNfc ? `${me?.name ?? ''}님, 안녕하세요` : 'NFC 태그를 대세요'}
+            </h1>
             <p className="w-sub">
               {noNfc
-                ? '아래 QR로 등록하세요'
+                ? '출근하기를 누르고 구역 입구 QR을 찍으세요'
                 : needsTap
-                  ? '가운데를 한 번 눌러 시작하세요'
+                  ? '사진을 한 번 눌러 시작하세요'
                   : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
             </p>
             <p className="w-cheer">{cheerFor(sky.hour)}</p>
             {offNow && <p className="w-off">{OFF_HINT[offNow]}</p>}
+            <div className="w-actions">
+              <button
+                className="pill pill-dark pill-checkin"
+                disabled={busy}
+                onClick={() => {
+                  unlockAudio()
+                  setSheetOpen(true)
+                }}
+              >
+                출근하기
+              </button>
+            </div>
           </>
         )}
 
         {notice && <p className={`w-notice is-${notice.kind}`}>{notice.text}</p>}
       </main>
 
-      <footer className="w-foot">
-        <button
-          className={noNfc && !recording ? 'pill pill-dark' : 'w-link'}
-          onClick={() => setSheetOpen(true)}
-          disabled={busy}
-        >
-          {recording ? '다른 구역 QR로 등록' : noNfc ? 'QR로 등록' : '태그가 안 되나요? QR로 등록'}
-        </button>
-      </footer>
+      {recording && (
+        <footer className="w-foot">
+          <button className="w-link" onClick={() => setSheetOpen(true)} disabled={busy}>
+            다른 구역 QR로 등록
+          </button>
+        </footer>
+      )}
 
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
       {recording && assistMode === 'open' && (

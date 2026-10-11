@@ -2361,3 +2361,88 @@ html.no-scroll body {
   margin: 0;
   max-height: 100%;
 }
+
+/* waiting screen: the worker's photo in place of the NFC mark */
+.nfc-orb.w-photo {
+  padding: 0;
+  overflow: visible;
+  background: #fff;
+}
+.nfc-orb.w-photo img,
+.nfc-orb.w-photo .speaker-initial {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 40%;
+  border: 4px solid #fff;
+  display: grid;
+  place-items: center;
+}
+.nfc-orb.w-photo.is-busy img {
+  opacity: 0.55;
+}
+.pill-checkin {
+  min-width: 220px;
+}
+
+/* answer card: tool buttons (enlarge/shrink, close) */
+.mini-tools {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+  z-index: 1;
+}
+.mini-tools .mini-x {
+  position: static;
+  width: 30px;
+  height: 30px;
+}
+.assist-inline .assist-quote,
+.assist-inline .mini-headline {
+  margin-right: 72px;
+}
+/* enlarged answer: grows over the screen between the header and the footer link */
+.w-answer-slot .assist-inline.is-expanded {
+  position: fixed;
+  z-index: 40;
+  left: 16px;
+  right: 16px;
+  width: auto;
+  max-width: 560px;
+  margin: 0 auto;
+  max-height: none;
+  padding: 22px 22px 18px;
+  gap: 10px;
+  border-radius: 24px;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.55);
+  animation: answer-grow 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: 50% 90%;
+}
+@keyframes answer-grow {
+  from {
+    transform: scale(0.82);
+    opacity: 0.3;
+  }
+}
+.assist-inline.is-expanded .mini-headline {
+  font-size: 1.3rem;
+  line-height: 1.42;
+}
+.assist-inline.is-expanded .assist-details {
+  font-size: 1.02rem;
+  gap: 6px;
+}
+.assist-inline.is-expanded .assist-quote {
+  font-size: 0.95rem;
+}
+.assist-inline.is-expanded .assist-chip {
+  min-height: 44px;
+  font-size: 0.95rem;
+}
+.assist-inline.is-expanded .mini-tools {
+  top: 12px;
+  right: 12px;
+}
