@@ -247,3 +247,18 @@ def test_end_workday_checks_out_and_briefs(client):
     client.post("/api/workday/end", headers=worker)
     events2 = client.get("/api/admin/location/events", headers=admin).json()["items"]
     assert len(events2) == len(events)
+
+
+def test_start_handover_lists_yesterday_and_today(client):
+    worker = login(client, "1001")
+    res = client.get("/api/workday/handover", headers=worker)
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["source"] == "template"
+    f = body["facts"]
+    assert f["zone"] == "A구역 3번 블록" and f["zone_tag"] == "OVOT-ZONE-A-001"
+    assert f["today_steps"][0] == "1층 루트 패스 용접"
+    assert body["summary"]["today"][0] == "1층 루트 패스 용접 이어서 진행"
+    assert body["summary"]["yesterday"] and body["summary"]["watch"]
+    # reading the handover does not register a location by itself
+    assert client.get("/api/location/current", headers=worker).json()["current_location"]["zone"]["id"] == "ZONE-OUT"

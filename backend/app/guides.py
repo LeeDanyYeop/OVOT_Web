@@ -76,6 +76,29 @@ GUIDES: dict[str, dict] = {
 }
 
 
+# Previous shift's work log per zone (demo data). In production this comes from the
+# work-log / MES records of the day before; today's real records are added on top.
+HANDOVER: dict[str, dict] = {
+    "ZONE-A": {
+        "log": [
+            {"time": "08:10", "who": "김민수", "text": "개선면 청소·가접 상태 확인 완료"},
+            {"time": "09:30", "who": "김민수", "text": "예열 100℃ 확인 (접촉식 온도계)"},
+            {"time": "10:20", "who": "김민수", "text": "1층 루트 패스 용접 시작 — 선수 쪽부터"},
+            {"time": "14:50", "who": "이준호", "text": "가접부 1곳 미세 균열 발견 → 그라인딩 후 재가접"},
+            {"time": "16:40", "who": "김민수", "text": "루트 패스 약 60% 진행, 선미 쪽 1.2m 남음"},
+        ],
+        "progress": "1층 루트 패스 약 60% 진행 (선미 쪽 1.2m 남음)",
+        "open_issues": [
+            "재가접한 부위는 루트 패스 전에 육안으로 다시 확인",
+            "용접기 2번 와이어 송급 불량 — 정비 요청해 둠, 1번 사용",
+        ],
+    },
+}
+
+
+def handover_for(zone_id: str | None) -> dict | None:
+    return HANDOVER.get(zone_id or "")
+
 def guide_for(title: str | None) -> dict | None:
     return GUIDES.get(title or "")
 

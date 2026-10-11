@@ -11,6 +11,7 @@ import type {
   AssistContext,
   AssistLogItem,
   WorkdayBrief,
+  WorkdayHandover,
   WorkersLocations,
   ZonesState,
 } from '../types'
@@ -190,6 +191,7 @@ export const api = {
   assistEscalate: (logId: number) =>
     request<{ ok: boolean; owner: string | null }>(`/api/assist/${logId}/escalate`, { method: 'POST' }),
   adminAssist: (limit = 20) => request<{ items: AssistLogItem[] }>(`/api/admin/assist?limit=${limit}`),
+  startHandover: () => request<WorkdayHandover>('/api/workday/handover', {}, 30_000),
   endWorkday: () => request<WorkdayBrief>('/api/workday/end', { method: 'POST' }, 45_000),
   adminTags: () => request<{ items: TagInfo[] }>('/api/admin/tags'),
 }

@@ -196,6 +196,21 @@ export interface WorkdayBrief {
   source: 'ai' | 'template'
 }
 
+export interface WorkdayHandover {
+  facts: {
+    worker: { name: string; team: string; role: string }
+    zone: string | null
+    zone_tag: string | null
+    date: string
+    assignment: string | null
+    progress: string | null
+    current_step: string | null
+    owner: string | null
+  }
+  summary: { headline: string; yesterday: string[]; today: string[]; watch: string[] }
+  source: 'ai' | 'template'
+}
+
 export type HubMessage =
   | { type: 'ready' }
   | { type: 'error'; code: string }

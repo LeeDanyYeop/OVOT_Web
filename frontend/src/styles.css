@@ -2677,3 +2677,63 @@ html.no-scroll body {
     transform: rotate(360deg);
   }
 }
+
+/* 출근하기 — handover */
+.handover-zone {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 113, 227, 0.1);
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.handover-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.05);
+  line-height: 1.4;
+}
+.handover-progress span {
+  flex: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.handover-progress strong {
+  font-weight: 700;
+}
+.brief-list.is-steps {
+  counter-reset: step;
+}
+.brief-list.is-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  top: 0.95em;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+}
+.brief-list.is-steps li {
+  padding-left: 40px;
+}
+.handover-actions {
+  flex: none;
+  padding: 12px 20px calc(14px + env(safe-area-inset-bottom));
+  background: #f5f5f7;
+  border-top: 1px solid var(--hairline);
+}
+.handover-actions .brief-done {
+  display: block;
+  max-width: 520px;
+  margin: 0 auto;
+}

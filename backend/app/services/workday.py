@@ -7,13 +7,13 @@ facts are phrased by fixed templates, so the briefing always works.
 
 import asyncio
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..guides import guide_for
-from ..models import AssistLog, LocationEvent, VoiceClip, Worker, WorkAssignment, WorkerCurrentLocation, Zone
+from ..guides import guide_for, handover_for
+from ..models import AssistLog, LocationEvent, NfcTag, VoiceClip, Worker, WorkAssignment, WorkerCurrentLocation, Zone
 from ..timeutil import KST, to_kst_iso
 from .assist_ai import AssistUnavailable, generate_json
 
@@ -87,12 +87,7 @@ def day_facts(db: Session, worker: Worker, now: datetime) -> dict:
     asks = db.scalars(select(AssistLog).where(AssistLog.worker_id == worker.id, AssistLog.created_at >= start)).all()
     pending = [a for a in asks if a.escalated_at is not None]
 
-    assignment = db.scalar(
-        select(WorkAssignment)
-        .where(WorkAssignment.worker_id == worker.id, WorkAssignment.status != "done")
-        .order_by(WorkAssignment.assigned_at.desc())
-        .limit(1)
-    )
+    assignment = _open_assignment(db, worker)
     guide = guide_for(assignment.title if assignment else None)
     remaining: list[str] = []
     next_notes: list[str] = []
@@ -181,3 +176,116 @@ def stats(facts: dict) -> list[dict]:
         {"label": "오봇 질문", "value": f"{facts['questions']['count']}건"},
     ]
 
+
+
+# ---- 출근하기: handover from the previous shift in the worker's zone ----
+
+HANDOVER_AI_SECONDS = 12
+
+
+def _open_assignment(db: Session, worker: Worker) -> WorkAssignment | None:
+    return db.scalar(
+        select(WorkAssignment)
+        .where(WorkAssignment.worker_id == worker.id, WorkAssignment.status != "done")
+        .order_by(WorkAssignment.assigned_at.desc())
+        .limit(1)
+    )
+
+
+def handover_facts(db: Session, worker: Worker, now: datetime) -> dict:
+    assignment = _open_assignment(db, worker)
+    zone = db.get(Zone, assignment.zone_id) if assignment else None
+    guide = guide_for(assignment.title if assignment else None)
+    record = handover_for(zone.id if zone else None) or {"log": [], "progress": None, "open_issues": []}
+    today = _day_start_utc(now)
+    yesterday = today - timedelta(days=1)
+
+    # questions sent to the responsible person yesterday in this zone are still open items
+    escalated = db.scalars(
+        select(AssistLog).where(
+            AssistLog.zone_id == (zone.id if zone else None),
+            AssistLog.created_at >= yesterday,
+            AssistLog.created_at < today,
+            AssistLog.escalated_at.is_not(None),
+        )
+    ).all()
+    open_issues = list(record["open_issues"])
+    open_issues += [f"담당자 확인 대기: {json.loads(a.answer_json).get('headline')}" for a in escalated]
+
+    steps: list[str] = []
+    current_step = None
+    if guide:
+        cur = guide["current_step"]
+        current_step = f"{cur}/{len(guide['steps'])}단계 {guide['steps'][cur - 1]}"
+        steps = guide["steps"][cur - 1 :]
+
+    tag = (
+        db.scalar(select(NfcTag).where(NfcTag.zone_id == zone.id, NfcTag.is_active.is_(True)).limit(1)) if zone else None
+    )
+    return {
+        "worker": {"name": worker.name, "team": worker.team, "role": worker.role},
+        "zone": zone.name if zone else None,
+        "zone_tag": tag.tag_code if tag else None,
+        "date": yesterday.strftime("%Y-%m-%d"),
+        "assignment": assignment.title if assignment else None,
+        "yesterday_log": record["log"],
+        "progress": record["progress"],
+        "open_issues": open_issues,
+        "current_step": current_step,
+        "today_steps": steps,
+        "step_notes": guide.get("step_notes", {}).get(guide["current_step"] + 1, []) if guide else [],
+        "cautions": guide["cautions"][:3] if guide else [],
+        "owner": guide["owner"] if guide else None,
+    }
+
+
+def handover_template(f: dict) -> dict:
+    yesterday = [f"{x['time']} {x['text']}" for x in f["yesterday_log"]][-4:] or ["어제 이 구역에 남은 작업 기록이 없어요"]
+    today: list[str] = []
+    if f["today_steps"]:
+        first = f["today_steps"][0]
+        today.append(f"{first} 이어서 진행" if f["progress"] else first)
+        today += f["today_steps"][1:3]
+    watch = (f["open_issues"] + f["cautions"])[:3]
+    return {
+        "headline": f"{f['worker']['name']}님, 오늘도 안전하게 시작해요.",
+        "yesterday": yesterday,
+        "today": today or ["배정된 작업이 없어요. 담당자에게 확인하세요"],
+        "watch": watch,
+    }
+
+
+HANDOVER_PROMPT = """너는 조선소 현장 도우미 '오봇'이다. 작업자가 출근 버튼을 눌렀다.
+아래 [인수인계 기록]의 사실만 사용해 한국어로 짧은 인수인계 브리핑을 쓴다. 시간·수치·구역·단계 이름을 바꾸거나 지어내지 않는다.
+
+- headline: 따뜻한 한 문장 인사 (35자 이내, 이름 포함)
+- yesterday: 어제 이 구역에서 진행된 일 3~4개 (각 32자 이내, 진행률·문제 처리 포함, 시간 순서)
+- today: 오늘 할 일 2~4개 (today_steps 순서대로, 첫 단계는 어제 진행 상황을 이어서, 각 32자 이내)
+- watch: 오늘 꼭 확인할 것 2~3개 (open_issues를 먼저, 그다음 안전 주의, 각 35자 이내)
+
+JSON만 출력: {"headline": str, "yesterday": [str], "today": [str], "watch": [str]}
+"""
+
+
+async def handover_brief(facts: dict) -> tuple[dict, str]:
+    fallback = handover_template(facts)
+    if not facts["yesterday_log"] and not facts["today_steps"]:
+        return fallback, "template"
+    prompt_facts = {k: v for k, v in facts.items() if k != "zone_tag"}
+    try:
+        data = await asyncio.wait_for(
+            generate_json(
+                [{"text": HANDOVER_PROMPT + "\n[인수인계 기록]\n" + json.dumps(prompt_facts, ensure_ascii=False, indent=1)}],
+                timeout=10,
+            ),
+            timeout=HANDOVER_AI_SECONDS,
+        )
+        summary = {
+            "headline": str(data.get("headline") or fallback["headline"]).strip(),
+            "yesterday": [str(x).strip() for x in data.get("yesterday") or []][:4] or fallback["yesterday"],
+            "today": [str(x).strip() for x in data.get("today") or []][:4] or fallback["today"],
+            "watch": [str(x).strip() for x in data.get("watch") or []][:3] or fallback["watch"],
+        }
+        return summary, "ai"
+    except (AssistUnavailable, asyncio.TimeoutError):
+        return fallback, "template"

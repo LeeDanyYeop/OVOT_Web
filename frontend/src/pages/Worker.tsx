@@ -6,6 +6,7 @@ import { AssistInline } from '../components/AssistInline'
 import { AssistSheet } from '../components/AssistSheet'
 import { BriefingScreen } from '../components/BriefingScreen'
 import { CheckoutConfirm } from '../components/CheckoutConfirm'
+import { HandoverScreen } from '../components/HandoverScreen'
 import { InstallBanner } from '../components/InstallBanner'
 import { ProfileSheet } from '../components/ProfileSheet'
 import { SpeakingAvatar } from '../components/SpeakingAvatar'
@@ -17,7 +18,7 @@ import { cheerFor, currentHour, useSky } from '../lib/sky'
 import { AUTO_STOP_TEXT, OFF_HINT, OFF_LABEL, offHoursReason, type OffReason } from '../lib/workHours'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
 import { extractTagCode } from '../scan/tagCode'
-import type { CheckInSource, WorkdayBrief } from '../types'
+import type { CheckInSource, WorkdayBrief, WorkdayHandover } from '../types'
 
 type NfcState = 'idle' | 'listening' | 'unsupported' | 'insecure' | 'error'
 type Notice = { kind: 'ok' | 'info' | 'error'; text: string } | null
@@ -69,6 +70,11 @@ export function WorkerPage() {
   const [checkout, setCheckout] = useState<'none' | 'confirm' | 'brief'>('none')
   const [brief, setBrief] = useState<WorkdayBrief | null>(null)
   const [briefError, setBriefError] = useState<string | null>(null)
+  // 출근하기: yesterday's handover for the worker's zone → 확인 → check in + streaming
+  const [handoverOpen, setHandoverOpen] = useState(false)
+  const [handover, setHandover] = useState<WorkdayHandover | null>(null)
+  const [handoverError, setHandoverError] = useState<string | null>(null)
+  const handoverLoading = useRef(false)
   // 오봇: closed / full sheet / minimized to a floating mic (answers type out on the screen)
   // 오봇 answers show inline under the button; 'open' = full sheet for the figure / references
   const [assistMode, setAssistMode] = useState<'closed' | 'open'>('closed')
@@ -192,6 +198,24 @@ export function WorkerPage() {
     }
   }, [])
 
+  const loadHandover = useCallback(async () => {
+    if (handoverLoading.current) return
+    handoverLoading.current = true
+    setHandoverError(null)
+    try {
+      setHandover(await api.startHandover())
+    } catch (err) {
+      setHandoverError(err instanceof ApiError ? err.message : '인수인계를 불러오지 못했어요')
+    } finally {
+      handoverLoading.current = false
+    }
+  }, [])
+
+  // prepare the handover while the worker is on the waiting screen, so 출근하기 opens it at once
+  useEffect(() => {
+    if (!recording && !handover && checkout === 'none') void loadHandover()
+  }, [recording, handover, checkout, loadHandover])
+
   const goHome = useCallback(async () => {
     setCheckout('brief')
     stopRecording()
@@ -303,7 +327,7 @@ export function WorkerPage() {
 
   // The page canvas shows through any strip the OS leaves uncovered (iOS home-screen apps
   // leave one at the bottom). Paint it the colour of whatever is at the bottom of the screen.
-  const canvasColor = sheetOpen ? '#000000' : profileOpen || checkout === 'brief' ? '#f5f5f7' : assistMode === 'open' ? '#ffffff' : sky.bottom
+  const canvasColor = sheetOpen ? '#000000' : profileOpen || checkout === 'brief' || handoverOpen ? '#f5f5f7' : assistMode === 'open' ? '#ffffff' : sky.bottom
   useEffect(() => {
     const html = document.documentElement
     html.style.backgroundColor = canvasColor
@@ -316,6 +340,13 @@ export function WorkerPage() {
     },
     [],
   )
+  const startShift = () => {
+    const tag = handover?.facts.zone_tag
+    setHandoverOpen(false)
+    if (tag) void submit(tag, 'manual')
+    else setSheetOpen(true) // no assigned zone: register by QR instead
+  }
+
   const needsTap = nfcState === 'idle' || nfcState === 'error'
   const noNfc = nfcState === 'unsupported' || nfcState === 'insecure'
 
@@ -462,7 +493,8 @@ export function WorkerPage() {
                 disabled={busy}
                 onClick={() => {
                   unlockAudio()
-                  setSheetOpen(true)
+                  setHandoverOpen(true)
+                  if (!handover) void loadHandover()
                 }}
               >
                 출근하기
@@ -495,10 +527,22 @@ export function WorkerPage() {
           onClose={() => {
             setCheckout('none')
             setBrief(null)
+            setHandover(null) // the next 출근 gets a fresh handover
           }}
         />
       )}
 
+      {handoverOpen && (
+        <HandoverScreen
+          handover={handover}
+          error={handoverError}
+          photo={`/avatars/${me?.id ?? 'unknown'}.jpg`}
+          busy={busy}
+          onConfirm={startShift}
+          onRetry={() => void loadHandover()}
+          onClose={() => setHandoverOpen(false)}
+        />
+      )}
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}
       {recording && assistMode === 'open' && (
         <AssistSheet

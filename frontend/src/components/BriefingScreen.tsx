@@ -96,7 +96,7 @@ export function BriefingScreen({ brief, error, photo, onClose, onRetry }: Props)
   )
 }
 
-function BriefList({ title, items, accent, warn }: { title: string; items: string[]; accent?: boolean; warn?: boolean }) {
+export function BriefList({ title, items, accent, warn }: { title: string; items: string[]; accent?: boolean; warn?: boolean }) {
   if (items.length === 0) return null
   return (
     <section className="brief-section">
