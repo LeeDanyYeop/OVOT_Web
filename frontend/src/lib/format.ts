@@ -42,6 +42,7 @@ export const SOURCE_LABEL: Record<string, string> = {
   qr: 'QR',
   manual: '코드 입력',
   seed: '초기 데이터',
+  checkout: '퇴근',
 }
 
 export const RISK_LABEL: Record<RiskLevel, string> = {

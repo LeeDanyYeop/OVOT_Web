@@ -43,37 +43,26 @@ def ai_enabled() -> bool:
     return bool(config.GEMINI_API_KEY)
 
 
-async def answer_voice(audio: bytes, mime: str, context: dict) -> dict:
+async def generate_json(parts: list[dict], timeout: float = 40) -> dict:
+    """One Gemini call that must return JSON. Retries briefly when the endpoint is busy."""
     if not ai_enabled():
         raise AssistUnavailable("AI 키가 설정되지 않았습니다")
-    prompt = INSTRUCTIONS + "\n[작업 맥락 · 승인된 지침]\n" + json.dumps(context, ensure_ascii=False, indent=1)
     body = {
-        "contents": [
-            {
-                "role": "user",
-                "parts": [
-                    {"inline_data": {"mime_type": mime, "data": base64.b64encode(audio).decode()}},
-                    {"text": prompt},
-                ],
-            }
-        ],
+        "contents": [{"role": "user", "parts": parts}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
     }
     url = ENDPOINT.format(model=config.GEMINI_MODEL)
-    data = None
     last_exc: Exception | None = None
     # The model endpoint is occasionally overloaded (429/5xx); retry briefly before giving up.
     for attempt in range(3):
         try:
-            async with httpx.AsyncClient(timeout=40) as client:
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 res = await client.post(url, json=body, headers={"x-goog-api-key": config.GEMINI_API_KEY})
             if res.status_code in RETRYABLE and attempt < 2:
                 await asyncio.sleep(0.8 * (attempt + 1))
                 continue
             res.raise_for_status()
-            text = res.json()["candidates"][0]["content"]["parts"][0]["text"]
-            data = json.loads(text)
-            break
+            return json.loads(res.json()["candidates"][0]["content"]["parts"][0]["text"])
         except httpx.TimeoutException as exc:
             last_exc = exc
             if attempt < 2:
@@ -81,10 +70,15 @@ async def answer_voice(audio: bytes, mime: str, context: dict) -> dict:
         except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
             last_exc = exc
             break
-    if data is None:
-        log.warning("assist AI call failed: %s", last_exc)
-        raise AssistUnavailable("AI 응답을 받지 못했습니다")
+    log.warning("AI call failed: %s", last_exc)
+    raise AssistUnavailable("AI 응답을 받지 못했습니다")
 
+
+async def answer_voice(audio: bytes, mime: str, context: dict) -> dict:
+    prompt = INSTRUCTIONS + "\n[작업 맥락 · 승인된 지침]\n" + json.dumps(context, ensure_ascii=False, indent=1)
+    data = await generate_json(
+        [{"inline_data": {"mime_type": mime, "data": base64.b64encode(audio).decode()}}, {"text": prompt}]
+    )
     return {
         "transcript": str(data.get("transcript") or "").strip(),
         "headline": str(data.get("headline") or "담당자에게 확인하세요.").strip(),

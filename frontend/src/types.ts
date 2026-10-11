@@ -46,7 +46,7 @@ export interface MeResponse {
 /** Canonical event envelope + display fields. Future site events share this shape. */
 export interface LocationEvent {
   event_id: string
-  event_type: 'worker_location_changed' | 'worker_location_confirmed'
+  event_type: 'worker_location_changed' | 'worker_location_confirmed' | 'worker_checked_out'
   worker_id: string
   zone_id: string
   previous_zone_id: string | null
@@ -179,10 +179,27 @@ export interface AssistLogItem {
   created_at: string
 }
 
+export interface WorkdayBrief {
+  facts: {
+    worker: { name: string; team: string; role: string }
+    date: string
+    check_in_at: string | null
+    check_out_at: string
+    worked_minutes: number
+    zones: { zone: string; minutes: number }[]
+    assignment: string | null
+    current_step: string | null
+    remaining_steps: string[]
+  }
+  stats: { label: string; value: string }[]
+  summary: { headline: string; done: string[]; next: string[]; reminders: string[] }
+  source: 'ai' | 'template'
+}
+
 export type HubMessage =
   | { type: 'ready' }
   | { type: 'error'; code: string }
-  | { type: 'worker_location_changed' | 'worker_location_confirmed'; data: LocationEvent }
+  | { type: 'worker_location_changed' | 'worker_location_confirmed' | 'worker_checked_out'; data: LocationEvent }
   | { type: 'tag_scan_rejected'; data: TagAlert }
   | { type: 'voice_clip_recorded'; data: VoiceClipInfo }
   | { type: 'assist_asked' | 'assist_escalated'; data: AssistLogItem }

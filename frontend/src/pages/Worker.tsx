@@ -4,6 +4,8 @@ import { SegmentRecorder, voiceCaptureSupported, type VoiceClip } from '../captu
 import { QrScanSheet } from '../components/QrScanSheet'
 import { AssistInline } from '../components/AssistInline'
 import { AssistSheet } from '../components/AssistSheet'
+import { BriefingScreen } from '../components/BriefingScreen'
+import { CheckoutConfirm } from '../components/CheckoutConfirm'
 import { InstallBanner } from '../components/InstallBanner'
 import { ProfileSheet } from '../components/ProfileSheet'
 import { SpeakingAvatar } from '../components/SpeakingAvatar'
@@ -15,7 +17,7 @@ import { cheerFor, currentHour, useSky } from '../lib/sky'
 import { AUTO_STOP_TEXT, OFF_HINT, OFF_LABEL, offHoursReason, type OffReason } from '../lib/workHours'
 import { NfcError, listenForTags, nfcPermissionGranted, nfcSupport } from '../scan/nfc'
 import { extractTagCode } from '../scan/tagCode'
-import type { CheckInSource } from '../types'
+import type { CheckInSource, WorkdayBrief } from '../types'
 
 type NfcState = 'idle' | 'listening' | 'unsupported' | 'insecure' | 'error'
 type Notice = { kind: 'ok' | 'info' | 'error'; text: string } | null
@@ -63,6 +65,10 @@ export function WorkerPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [photoOk, setPhotoOk] = useState(true)
+  // 퇴근하기: confirm → stop streaming + check out → today's briefing
+  const [checkout, setCheckout] = useState<'none' | 'confirm' | 'brief'>('none')
+  const [brief, setBrief] = useState<WorkdayBrief | null>(null)
+  const [briefError, setBriefError] = useState<string | null>(null)
   // 오봇: closed / full sheet / minimized to a floating mic (answers type out on the screen)
   // 오봇 answers show inline under the button; 'open' = full sheet for the figure / references
   const [assistMode, setAssistMode] = useState<'closed' | 'open'>('closed')
@@ -176,6 +182,27 @@ export function WorkerPage() {
     resetAssist()
   }, [recording, resetAssist])
 
+  const loadBrief = useCallback(async () => {
+    setBrief(null)
+    setBriefError(null)
+    try {
+      setBrief(await api.endWorkday())
+    } catch (err) {
+      setBriefError(err instanceof ApiError ? err.message : '퇴근 정리를 불러오지 못했어요')
+    }
+  }, [])
+
+  const goHome = useCallback(async () => {
+    setCheckout('brief')
+    stopRecording()
+    setNotice(null)
+    setZone(null)
+    // let the last voice segment upload so today's totals include it
+    await new Promise((r) => window.setTimeout(r, 900))
+    await flush()
+    await loadBrief()
+  }, [stopRecording, flush, loadBrief])
+
   // The worker view is a single fixed screen: lock page scroll / iOS rubber-band while it is open.
   useEffect(() => {
     document.documentElement.classList.add('no-scroll')
@@ -276,7 +303,7 @@ export function WorkerPage() {
 
   // The page canvas shows through any strip the OS leaves uncovered (iOS home-screen apps
   // leave one at the bottom). Paint it the colour of whatever is at the bottom of the screen.
-  const canvasColor = sheetOpen ? '#000000' : profileOpen ? '#f5f5f7' : assistMode === 'open' ? '#ffffff' : sky.bottom
+  const canvasColor = sheetOpen ? '#000000' : profileOpen || checkout === 'brief' ? '#f5f5f7' : assistMode === 'open' ? '#ffffff' : sky.bottom
   useEffect(() => {
     const html = document.documentElement
     html.style.backgroundColor = canvasColor
@@ -422,13 +449,11 @@ export function WorkerPage() {
             <h1 className="w-title">
               {busy ? '등록 중…' : noNfc ? `${me?.name ?? ''}님, 안녕하세요` : 'NFC 태그를 대세요'}
             </h1>
-            <p className="w-sub">
-              {noNfc
-                ? '출근하기를 누르고 구역 입구 QR을 찍으세요'
-                : needsTap
-                  ? '사진을 한 번 눌러 시작하세요'
-                  : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
-            </p>
+            {!noNfc && (
+              <p className="w-sub">
+                {needsTap ? '사진을 한 번 눌러 시작하세요' : '휴대폰 뒷면을 구역 입구 태그에 대면 스트리밍이 시작됩니다'}
+              </p>
+            )}
             <p className="w-cheer">{cheerFor(sky.hour)}</p>
             {offNow && <p className="w-off">{OFF_HINT[offNow]}</p>}
             <div className="w-actions">
@@ -450,11 +475,28 @@ export function WorkerPage() {
       </main>
 
       {recording && (
-        <footer className="w-foot">
+        <footer className="w-foot w-foot-row">
           <button className="w-link" onClick={() => setSheetOpen(true)} disabled={busy}>
             다른 구역 QR로 등록
           </button>
+          <span className="w-foot-sep" aria-hidden="true" />
+          <button className="w-link" onClick={() => setCheckout('confirm')} disabled={busy}>
+            퇴근하기
+          </button>
         </footer>
+      )}
+      {checkout === 'confirm' && <CheckoutConfirm onConfirm={() => void goHome()} onCancel={() => setCheckout('none')} />}
+      {checkout === 'brief' && (
+        <BriefingScreen
+          brief={brief}
+          error={briefError}
+          photo={`/avatars/${me?.id ?? 'unknown'}.jpg`}
+          onRetry={() => void loadBrief()}
+          onClose={() => {
+            setCheckout('none')
+            setBrief(null)
+          }}
+        />
       )}
 
       {profileOpen && <ProfileSheet onClose={() => setProfileOpen(false)} />}

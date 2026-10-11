@@ -84,7 +84,7 @@ export function AdminPage() {
     (msg: HubMessage) => {
       if (msg.type === 'ready') {
         void loadAll() // catch up on anything missed while disconnected
-      } else if (msg.type === 'worker_location_changed' || msg.type === 'worker_location_confirmed') {
+      } else if (msg.type === 'worker_location_changed' || msg.type === 'worker_location_confirmed' || msg.type === 'worker_checked_out') {
         const ev = msg.data
         setEvents((prev) => [ev, ...prev.filter((p) => p.event_id !== ev.event_id)].slice(0, 100))
         setFlash((prev) => ({ ...prev, [ev.worker_id]: Date.now() }))

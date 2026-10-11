@@ -10,6 +10,7 @@ import type {
   AssistCard,
   AssistContext,
   AssistLogItem,
+  WorkdayBrief,
   WorkersLocations,
   ZonesState,
 } from '../types'
@@ -74,9 +75,9 @@ export const NETWORK_MESSAGE =
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-async function fetchWithTimeout(path: string, init: RequestInit): Promise<Response> {
+async function fetchWithTimeout(path: string, init: RequestInit, timeoutMs = TIMEOUT_MS): Promise<Response> {
   const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   try {
     return await fetch(path, { ...init, signal: ctrl.signal })
   } finally {
@@ -84,7 +85,7 @@ async function fetchWithTimeout(path: string, init: RequestInit): Promise<Respon
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}, timeoutMs = TIMEOUT_MS): Promise<T> {
   const headers = new Headers(init.headers)
   const token = tokenStore.get()
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -95,7 +96,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let res: Response | null = null
   for (let attempt = 0; ; attempt++) {
     try {
-      res = await fetchWithTimeout(path, { ...init, headers })
+      res = await fetchWithTimeout(path, { ...init, headers }, timeoutMs)
       if (!GATEWAY_ERRORS.has(res.status)) break
     } catch {
       res = null
@@ -189,5 +190,6 @@ export const api = {
   assistEscalate: (logId: number) =>
     request<{ ok: boolean; owner: string | null }>(`/api/assist/${logId}/escalate`, { method: 'POST' }),
   adminAssist: (limit = 20) => request<{ items: AssistLogItem[] }>(`/api/admin/assist?limit=${limit}`),
+  endWorkday: () => request<WorkdayBrief>('/api/workday/end', { method: 'POST' }, 45_000),
   adminTags: () => request<{ items: TagInfo[] }>('/api/admin/tags'),
 }

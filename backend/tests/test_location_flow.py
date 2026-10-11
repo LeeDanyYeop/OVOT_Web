@@ -220,3 +220,30 @@ def test_assist_voice_without_ai_key_falls_back_and_escalates(client):
 
     items = client.get("/api/admin/assist", headers=admin).json()["items"]
     assert items[0]["escalated"] is True and items[0]["kind_label"] == "직접 질문"
+
+
+def test_end_workday_checks_out_and_briefs(client):
+    worker = login(client, "1001")
+    admin = login(client, "1004")
+    client.post("/api/location/check-in", json={"tag_code": "OVOT-ZONE-A-001", "source": "nfc"}, headers=worker)
+    client.post("/api/assist/quick", json={"kind": "next"}, headers=worker)
+
+    res = client.post("/api/workday/end", headers=worker)
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["source"] == "template"  # no AI key in tests
+    assert body["facts"]["zones"][0]["zone"] == "A구역 3번 블록"
+    assert body["facts"]["remaining_steps"][0] == "슬래그 제거 후 2·3층 적층"
+    assert body["summary"]["next"][0].endswith("슬래그 제거 후 2·3층 적층")
+    assert body["facts"]["questions"]["count"] == 1
+    assert [x["label"] for x in body["stats"]] == ["근무", "구역", "음성 기록", "오봇 질문"]
+
+    # checked out: now outside the work area, recorded as an event
+    assert client.get("/api/location/current", headers=worker).json()["current_location"]["zone"]["id"] == "ZONE-OUT"
+    events = client.get("/api/admin/location/events", headers=admin).json()["items"]
+    assert events[0]["event_type"] == "worker_checked_out" and events[0]["previous_zone_id"] == "ZONE-A"
+
+    # a second press does not add another check-out event
+    client.post("/api/workday/end", headers=worker)
+    events2 = client.get("/api/admin/location/events", headers=admin).json()["items"]
+    assert len(events2) == len(events)
