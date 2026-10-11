@@ -1844,12 +1844,6 @@ html.no-scroll body {
 }
 
 /* ---- iOS home-screen fixes ---- */
-/* stretch full-screen layers over the bottom gap (see measureIosGap in main.tsx) */
-.profile,
-.qr-full,
-.assist-backdrop {
-  bottom: calc(-1 * var(--ios-gap, 0px));
-}
 /* sizes follow the space actually left between header and footer */
 .w-stage {
   container-type: size;
@@ -2495,7 +2489,6 @@ html.no-scroll body {
 .brief {
   position: fixed;
   inset: 0;
-  bottom: calc(-1 * var(--ios-gap, 0px));
   z-index: 75;
   display: flex;
   flex-direction: column;
