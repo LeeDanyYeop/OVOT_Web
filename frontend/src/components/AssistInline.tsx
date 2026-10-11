@@ -81,33 +81,94 @@ export function AssistInline({ assist, onExpand }: Props) {
     if (el) el.scrollTop = el.scrollHeight
   }, [])
 
-  // every new answer starts enlarged
-  const cardId = card?.log_id
-  useEffect(() => {
-    setExpanded(cardId !== undefined)
-  }, [cardId])
-
-  // enlarged: span from under the header to above the footer (or the screen bottom)
-  useLayoutEffect(() => {
+  // Morph between the small area under the button and the enlarged card by animating
+  // the card's own box (position, size, corner radius) — no jump, no zoom.
+  const expandedRef = useRef(false)
+  const targetRect = (toExpanded: boolean, el: HTMLElement) => {
+    const screen = el.closest('.w')
+    if (!toExpanded) return (el.parentElement as HTMLElement).getBoundingClientRect()
+    const head = screen?.querySelector('.w-head')?.getBoundingClientRect()
+    const foot = screen?.querySelector('.w-foot')?.getBoundingClientRect()
+    const inset = screen ? parseFloat(getComputedStyle(screen).paddingBottom) || 0 : 0
+    const width = Math.min(window.innerWidth - 32, 560)
+    const top = (head?.bottom ?? 0) + 14
+    const bottom = foot ? foot.top - 8 : window.innerHeight - inset - 14
+    return new DOMRect((window.innerWidth - width) / 2, top, width, bottom - top)
+  }
+  const morph = useCallback((toExpanded: boolean) => {
     const el = boxRef.current
     if (!el) return
-    const place = () => {
-      if (!expanded) {
-        el.style.top = ''
-        el.style.bottom = ''
-        return
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    const from = el.getBoundingClientRect()
+    expandedRef.current = toExpanded
+    setExpanded(toExpanded)
+    const to = targetRect(toExpanded, el)
+    const finish = () => {
+      el.style.transition = ''
+      if (!expandedRef.current) {
+        // back in the slot: return to normal layout
+        el.style.position = el.style.left = el.style.top = el.style.width = el.style.height = ''
       }
-      const screen = el.closest('.w')
-      const head = screen?.querySelector('.w-head')?.getBoundingClientRect()
-      const foot = screen?.querySelector('.w-foot')?.getBoundingClientRect()
-      const inset = screen ? parseFloat(getComputedStyle(screen).paddingBottom) || 0 : 0
-      el.style.top = `${(head?.bottom ?? 0) + 14}px`
-      el.style.bottom = `${foot ? window.innerHeight - foot.top + 8 : inset + 14}px`
     }
-    place()
-    window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
-  }, [expanded, cardId])
+    // start exactly where the card is now…
+    Object.assign(el.style, {
+      transition: 'none',
+      position: 'fixed',
+      left: `${from.left}px`,
+      top: `${from.top}px`,
+      width: `${from.width}px`,
+      height: `${from.height}px`,
+      margin: '0',
+    })
+    void el.offsetHeight
+    if (reduce) {
+      Object.assign(el.style, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px` })
+      finish()
+      return
+    }
+    // …and glide to the target box
+    el.style.transition =
+      'left 0.5s cubic-bezier(0.32, 0.72, 0, 1), top 0.5s cubic-bezier(0.32, 0.72, 0, 1), width 0.5s cubic-bezier(0.32, 0.72, 0, 1), height 0.5s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.5s, padding 0.5s, box-shadow 0.5s'
+    Object.assign(el.style, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px` })
+    let done = false
+    const end = () => {
+      if (done) return
+      done = true
+      el.removeEventListener('transitionend', onEnd)
+      finish()
+    }
+    const onEnd = (e: TransitionEvent) => {
+      if (e.target === el && e.propertyName === 'height') end()
+    }
+    el.addEventListener('transitionend', onEnd)
+    // safety net: the event does not fire if the size did not change or the page was hidden
+    window.setTimeout(end, 650)
+  }, [])
+
+  // every new answer appears in the small area, then morphs open
+  const cardId = card?.log_id
+  useLayoutEffect(() => {
+    expandedRef.current = false
+    setExpanded(false)
+    const el = boxRef.current
+    if (el) el.style.position = el.style.left = el.style.top = el.style.width = el.style.height = el.style.transition = ''
+    if (cardId === undefined) return
+    // a short timer (not requestAnimationFrame, which pauses while the page is not painting)
+    const timer = window.setTimeout(() => morph(true), 30)
+    return () => window.clearTimeout(timer)
+  }, [cardId, morph])
+
+  // keep the enlarged card fitted when the screen size changes
+  useEffect(() => {
+    const onResize = () => {
+      const el = boxRef.current
+      if (!el || !expandedRef.current) return
+      const to = targetRect(true, el)
+      Object.assign(el.style, { transition: 'none', left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px` })
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   if (talk === 'listening') return null // the button itself shows the listening state
   if (talk === 'thinking') {
@@ -134,7 +195,7 @@ export function AssistInline({ assist, onExpand }: Props) {
         {(!expanded || typedDone) && (
           <button
             className="mini-x"
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => morph(!expanded)}
             aria-label={expanded ? '답변 작게 보기' : '답변 크게 보기'}
           >
             {expanded ? (
