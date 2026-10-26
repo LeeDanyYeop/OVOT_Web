@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\\\\PostgreSQL\" -ErrorAction SilentlyContinue | Select-Object Name; $p = \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\\\\psql.exe\"; if \\(Test-Path $p\\) { Write-Output \"FOUND: $p\"; & $p --version } else { Write-Output \"psql.exe not at default path\" })"
+    ]
+  }
+}

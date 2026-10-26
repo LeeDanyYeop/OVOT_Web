@@ -1,6 +1,6 @@
 {
   "_comment": "배포 후에도 이 파일만 수정하면 API 주소·조회 주기·Unity 빌드를 바꿀 수 있습니다. DB 접속 정보는 절대 넣지 마세요.",
-  "mode": "live",
+  "mode": "demo",
   "apiBaseUrl": "http://localhost:8000",
   "pollIntervalMs": 10000,
   "requestTimeoutMs": 8000,

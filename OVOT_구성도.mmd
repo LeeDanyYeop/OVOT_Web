@@ -1,0 +1,50 @@
+%% OVOT 웹 구성도 (Mermaid) — mermaid.live 또는 VS Code Mermaid 미리보기로 열기
+%% 실선 = 현재 연결, 점선 = 통합 예정 / 미연결
+flowchart LR
+    subgraph W["실무자(작업자) 웹 · ovot_user_web/frontend (React PWA)"]
+        direction TB
+        W1["작업자 화면<br/>NFC·QR 스캔 → 위치 등록"]
+        W2["태그 관리"]
+        W3["음성 캡처<br/>(MediaRecorder)"]
+    end
+
+    subgraph S["서버 계층 (FastAPI 2개)"]
+        direction TB
+        S1["① 위치 API<br/>ovot_user_web/backend<br/>auth · location · admin · voice · ws"]
+        S2["② 음성·업무 API<br/>ovot_user_web/DB<br/>tasks · voice_records · events · handoffs · audio"]
+        subgraph AI["음성 AI 파이프라인 (DB/ai)"]
+            direction LR
+            A1["노이즈 제거"] --> A2["소음수준 분석"] --> A3["STT(Whisper)"] --> A4["이벤트 추출"]
+        end
+        S2 --- AI
+    end
+
+    DB1[("SQLite<br/>workers · zones · nfc_tags<br/>location_events")]
+    DB2[("PostgreSQL ovot_db<br/>tasks · events · handoffs<br/>voice_records · audio_processing")]
+
+    subgraph A["관리자 웹 · admin-console (React 19 + Vite)"]
+        direction TB
+        A5["작업장 지도 (yard)"]
+        A6["디지털 트윈 (twin · canvas)"]
+        A7["설정 · 데모 모드"]
+    end
+
+    U["Unity WebGL (선택)"]
+
+    W1 -- "위치 체크인" --> S1
+    W3 -. "음성 업로드 (연결 예정)" .-> S2
+    S1 -. "통합 예정" .- S2
+    S1 --> DB1
+    S2 --> DB2
+    S1 -- "WebSocket 실시간" --> A
+    S2 -- "REST API" --> A
+    A6 -. "웹이 받은 데이터만 전달" .-> U
+
+    classDef user fill:#eff6ff,stroke:#3b82f6,color:#1e3a8a;
+    classDef server fill:#f0fdf4,stroke:#22c55e,color:#166534;
+    classDef db fill:#ffedd5,stroke:#f97316,color:#9a3412;
+    classDef admin fill:#f5f3ff,stroke:#8b5cf6,color:#5b21b6;
+    class W1,W2,W3 user;
+    class S1,S2,A1,A2,A3,A4 server;
+    class DB1,DB2 db;
+    class A5,A6,A7,U admin;

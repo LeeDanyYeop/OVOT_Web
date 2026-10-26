@@ -171,3 +171,18 @@ class AssistLog(Base):
 
     worker: Mapped[Worker] = relationship()
     zone: Mapped[Zone | None] = relationship()
+
+
+class DemoState(Base):
+    """Shared state of the B-03 demo scenario (flag decisions + worker acknowledgement).
+
+    One JSON row per key so the admin console and the worker PWA read the same decisions.
+    `rev` increases on every write; clients only apply a newer revision.
+    """
+
+    __tablename__ = "demo_state"
+
+    key: Mapped[str] = mapped_column(String(32), primary_key=True)
+    value_json: Mapped[str] = mapped_column(Text, nullable=False)
+    rev: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, nullable=False)

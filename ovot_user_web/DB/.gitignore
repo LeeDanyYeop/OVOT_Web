@@ -1,0 +1,44 @@
+# 환경변수 (실제 비밀번호 포함) — 절대 커밋 금지
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# 가상환경
+venv/
+.venv/
+env/
+
+# 테스트 / 캐시
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# 에디터 / OS
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# 로그 / 임시 산출물
+*.log
+logs/
+tmp/
+_scratch/
+
+# AI 오디오 저장소 (업로드 원본 / 정제 결과)
+audio_storage/
+backups/

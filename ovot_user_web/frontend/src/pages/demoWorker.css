@@ -1,0 +1,25 @@
+/* 협력사 작업자 DEMO 화면 — 작업자 앱과 같은 토큰·버튼·배지를 그대로 쓰고, 이 화면의 배치만 정의한다. */
+.dw { min-height: 100dvh; background: var(--bg); display: flex; flex-direction: column; max-width: 520px; margin: 0 auto; }
+.dw-head { padding: 18px 20px 14px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--hairline); }
+.dw-who { display: flex; flex-direction: column; gap: 2px; font-size: 0.92rem; color: var(--muted); }
+.dw-who strong { color: var(--text); font-size: 1.02rem; }
+.dw-main { flex: 1; padding: 18px 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+.dw-card { border: 1px solid var(--hairline); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; background: var(--bg); }
+.dw-card h1, .dw-card h2 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.dw-card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dw-card-top h1 { margin-right: auto; }
+.dw-vi { margin: 0; font-size: 1.45rem; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; }
+.dw-ko { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.dw-facts { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.dw-facts div { background: var(--bg-alt); border-radius: 14px; padding: 10px 12px; }
+.dw-facts dt { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+.dw-facts dd { margin: 2px 0 0; font-size: 1.3rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.dw-changed { color: var(--danger); }
+.dw-sent { margin: 0; font-weight: 600; }
+.dw-tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dw-tasks li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--hairline); min-height: 48px; }
+.dw-tasks li:first-child { border-top: 0; }
+.dw-foot { padding: 14px 20px 24px; color: var(--muted); font-size: 0.86rem; display: flex; flex-direction: column; gap: 4px; text-align: center; }
+.dw-foot p { margin: 0; }
+.dw-link.online { color: var(--ok); }
+.dw-link.offline { color: var(--warn); font-weight: 600; }

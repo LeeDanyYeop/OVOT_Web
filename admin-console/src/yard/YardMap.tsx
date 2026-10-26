@@ -37,6 +37,8 @@ interface Props {
   legendNote?: string
   /** 검은 바탕 무대 (깊이 음영 · 퍼짐 등장 · 관제 호) */
   night?: boolean
+  /** 구역 라벨의 진행률 대신 보여 줄 문구(플래그 기준). 주면 그 구역 라벨은 이 문구와 톤으로 그린다 */
+  zoneNotes?: Record<string, { text: string; tone: 'warn' | 'ok' }>
 }
 
 type Tag = SceneKey | 'ctx' | 'ground' | 'water'
@@ -304,7 +306,7 @@ const ORDER_BUCKETS = 120
 /** 회전 시 화면 채움 배율 — 모든 각도를 합친 범위는 한 각도보다 넓어서 그대로 맞추면 작게 보인다 */
 const SPIN_FILL = 1.15 // 깊이 정렬을 다시 하는 각도 간격 (3°)
 
-export function YardMap({ zoneMap, zones, selectedZoneId, focusZoneId, onSelect, compact, ariaLabel, rotate, highlightZoneId, onHoverZone, legendNote, night }: Props) {
+export function YardMap({ zoneMap, zones, selectedZoneId, focusZoneId, onSelect, compact, ariaLabel, rotate, highlightZoneId, onHoverZone, legendNote, night, zoneNotes }: Props) {
   const wrap = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const [size, setSize] = useState({ w: 0, h: 0 })
@@ -852,6 +854,7 @@ export function YardMap({ zoneMap, zones, selectedZoneId, focusZoneId, onSelect,
           const z = zones.find((x) => x.zone_id === zid)
           const cfg = zoneMap.zones.find((m) => m.zone_id === zid)
           const pr = progress.get(zid)
+          const note = zoneNotes?.[zid]
           const label = cfg?.label ?? zid
           const letter = label.replace('작업구역', '').trim() || label
           return (
@@ -861,7 +864,7 @@ export function YardMap({ zoneMap, zones, selectedZoneId, focusZoneId, onSelect,
                 if (el) labelEls.current.set(zid, el)
                 else labelEls.current.delete(zid)
               }}
-              className={`yard-label${selectedZoneId === zid ? ' on' : ''}${hv === zid ? ' hover' : ''}${pr?.hasTasks ? '' : ' none'}`}
+              className={`yard-label${selectedZoneId === zid ? ' on' : ''}${hv === zid ? ' hover' : ''}${note ? ` tone-${note.tone}` : pr?.hasTasks ? '' : ' none'}`}
               style={{ left: sx, top: sy, ['--stem' as string]: `${16 + lift}px` }}
               onClick={(e) => {
                 e.stopPropagation()
@@ -883,9 +886,9 @@ export function YardMap({ zoneMap, zones, selectedZoneId, focusZoneId, onSelect,
                 {cfg?.description && <span className="yl-desc">{cfg.description}</span>}
                 <span className="yl-meta">
                   <i className="yl-dot" />
-                  <em>{pr?.hasTasks ? `${pr.percent}%` : '작업 데이터 없음'}</em>
-                  {pr?.hasTasks && <span> 완료 {pr.done}/{pr.target}</span>}
-                  {!!z?.needsConfirmation && <u>확인 {z.needsConfirmation}</u>}
+                  <em>{note ? note.text : pr?.hasTasks ? `${pr.percent}%` : '작업 데이터 없음'}</em>
+                  {!note && pr?.hasTasks && <span> 완료 {pr.done}/{pr.target}</span>}
+                  {!note && !!z?.needsConfirmation && <u>확인 {z.needsConfirmation}</u>}
                 </span>
               </span>
               <span className="yl-stem" />

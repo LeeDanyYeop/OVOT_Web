@@ -1,0 +1,23 @@
+# OVOT Backend — Python 3.13 / Anaconda env "SQL" 에서 검증된 버전
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+sqlalchemy==2.1.4
+psycopg[binary]==3.3.6
+pydantic==2.14.0
+pydantic-settings==2.15.0
+python-dotenv==1.2.4
+
+# 테스트
+pytest==9.1.1
+httpx==0.28.1
+
+# 파일 업로드 (multipart/form-data)
+python-multipart==0.0.32
+
+# AI — CRN 노이즈 제거 + Whisper STT (원본 ai/requirements.txt 기준)
+# torch 는 GPU(CUDA 12.8, RTX 50 시리즈 포함) 용으로 별도 설치:
+#   pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu128
+torch>=2.6
+numpy==2.5.4
+soundfile==0.14.0
+faster-whisper==1.2.1

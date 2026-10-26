@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .db import SessionLocal
-from .routers import admin, assist, auth, client_log, location, voice, workday, ws
+from .routers import admin, assist, auth, client_log, demo_state, location, voice, workday, ws
 from .seed import init_db, seed
 
 # Windows registries often map .js to text/plain, which browsers refuse for module scripts.
@@ -43,6 +43,7 @@ app.include_router(assist.router)
 app.include_router(workday.router)
 app.include_router(ws.router)
 app.include_router(client_log.router)
+app.include_router(demo_state.router)
 
 
 @app.get("/api/health")
