@@ -1,0 +1,95 @@
+/* 오봇 캐릭터 · 챗봇 — 흰 광택 + 연한 파랑, 애플식 둥근 카드 */
+.ovot { display: block; overflow: visible; }
+.ovot-bob { animation: ovot-bob 3.2s ease-in-out infinite; }
+.ovot-eyes { transform-box: fill-box; transform-origin: center; animation: ovot-blink 4.6s infinite; }
+.ovot-ring { animation: ovot-ring 2.4s ease-in-out infinite; }
+.ovot-arm { transform-origin: 0 0; }
+.ovot-wave .ovot-arm { animation: ovot-wave 2.8s ease-in-out infinite; }
+.ovot-think .ovot-eyes { animation: ovot-look 1.4s ease-in-out infinite; }
+.ovot-think .ovot-ring { animation-duration: 0.9s; }
+@keyframes ovot-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes ovot-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes ovot-ring { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes ovot-wave { 0%, 55%, 100% { transform: rotate(0); } 65% { transform: rotate(-16deg); } 75% { transform: rotate(8deg); } 85% { transform: rotate(-12deg); } }
+@keyframes ovot-look { 0%, 100% { transform: translateX(-4px); } 50% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .ovot * { animation: none !important; } }
+
+.ob-root { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', system-ui, sans-serif; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+.ob-root *, .ob-root *::before, .ob-root *::after { box-sizing: border-box; }
+.ob-fab {
+  display: flex; align-items: flex-end; gap: 8px; margin-top: auto; align-self: flex-start;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  filter: drop-shadow(0 10px 18px rgba(70, 100, 220, 0.28));
+  transition: transform 0.2s;
+}
+.ob-fab:hover { transform: translateY(-2px) scale(1.04); }
+.ob-fab.on { transform: scale(0.9); }
+.ob-fab + .cn-side-foot { margin-top: 0; }
+.ob-tip {
+  margin-bottom: 30px; padding: 8px 13px; border-radius: 16px 16px 16px 4px; /* 왼쪽 오봇 쪽 꼬리 */
+  background: #fff; color: #1d1d1f; font-size: 13px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(40, 60, 140, 0.16);
+  animation: ob-in 0.4s 0.6s both;
+}
+
+.ob-panel {
+  position: fixed; left: 252px; bottom: 18px; z-index: 900;
+  width: 380px; height: min(580px, calc(100dvh - 120px));
+  display: flex; flex-direction: column;
+  background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(30, 50, 130, 0.22), 0 2px 8px rgba(30, 50, 130, 0.08);
+  overflow: hidden; color: #1d1d1f;
+  animation: ob-in 0.25s ease-out;
+  transform-origin: bottom left;
+}
+@keyframes ob-in { from { opacity: 0; transform: translateY(10px) scale(0.97); } }
+.ob-head {
+  display: flex; align-items: center; gap: 10px; padding: 14px 14px 12px 16px;
+  background: linear-gradient(180deg, #eef2ff, rgba(238, 242, 255, 0));
+}
+.ob-head .ob-sp { flex: 1; }
+.ob-head strong { display: block; font-size: 17px; }
+.ob-head small { display: block; font-size: 12px; color: #6e6e73; }
+.ob-icon { width: 34px; height: 34px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, 0.05); cursor: pointer; display: grid; place-items: center; }
+.ob-icon:hover { background: rgba(0, 0, 0, 0.09); }
+.ob-icon svg, .ob-input button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.ob-list { flex: 1; overflow-y: auto; padding: 6px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.ob-msg { display: flex; align-items: flex-end; gap: 6px; max-width: 100%; }
+.ob-msg p { margin: 0; padding: 10px 13px; font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; }
+.ob-assistant p { background: #f1f3f9; border-radius: 18px 18px 18px 6px; max-width: 290px; }
+.ob-user { justify-content: flex-end; }
+.ob-user p { background: #0071e3; color: #fff; border-radius: 18px 18px 6px 18px; max-width: 280px; }
+.ob-av { flex: none; width: 30px; display: grid; place-items: center; }
+.ob-dots { display: flex; gap: 4px; padding: 14px 16px !important; }
+.ob-dots i { width: 7px; height: 7px; border-radius: 50%; background: #8a94b8; animation: ob-dot 1s infinite; }
+.ob-dots i:nth-child(2) { animation-delay: 0.15s; }
+.ob-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ob-dot { 0%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+.ob-suggest { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 36px; }
+.ob-suggest button {
+  padding: 7px 12px; border: 1px solid #cfd9fb; border-radius: 999px; background: #fff; color: #0058b0;
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.ob-suggest button:hover { background: #e8f1fd; }
+
+.ob-input { display: flex; align-items: flex-end; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid #e8e8ed; background: rgba(255, 255, 255, 0.7); }
+.ob-input textarea {
+  flex: 1; resize: none; max-height: 96px; min-height: 40px; padding: 10px 14px;
+  border: 1px solid #d2d2d7; border-radius: 20px; background: #fff;
+  font: inherit; font-size: 14.5px; line-height: 1.35; color: inherit; outline: none;
+}
+.ob-input textarea:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.18); }
+.ob-input button { flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; background: #0071e3; color: #fff; cursor: pointer; display: grid; place-items: center; }
+.ob-input button:disabled { background: #c7c7cc; cursor: default; }
+
+/* 좁은 화면은 메뉴가 위로 접히므로 부르는 버튼을 오른쪽 아래에 띄운다 */
+@media (max-width: 950px) {
+  .ob-fab { position: fixed; right: 14px; bottom: 10px; z-index: 900; }
+  .ob-tip { display: none; }
+  .ob-panel { left: auto; right: 14px; bottom: 80px; transform-origin: bottom right; }
+}
+@media (max-width: 600px) {
+  .ob-panel { right: 8px; left: 8px; bottom: 78px; width: auto; height: calc(100dvh - 96px); }
+}

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" font-family="-apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif">
+  <rect width="640" height="400" rx="24" fill="#f5f5f7"/>
+  <!-- block (side view) -->
+  <rect x="110" y="120" width="380" height="170" rx="6" fill="#ffffff" stroke="#86868b" stroke-width="3"/>
+  <line x1="300" y1="120" x2="300" y2="290" stroke="#d2d2d7" stroke-width="2" stroke-dasharray="8 6"/>
+  <!-- weld groove -->
+  <path d="M286 120 L300 160 L314 120" fill="none" stroke="#ff9f0a" stroke-width="4" stroke-linejoin="round"/>
+  <text x="300" y="104" text-anchor="middle" font-size="17" font-weight="600" fill="#a35200">V 50° · 루트 6mm</text>
+  <!-- datum A: bottom skin plate -->
+  <rect x="110" y="276" width="380" height="16" rx="3" fill="#0071e3"/>
+  <circle cx="140" cy="284" r="13" fill="#ffffff" stroke="#0071e3" stroke-width="3"/>
+  <text x="140" y="290" text-anchor="middle" font-size="16" font-weight="700" fill="#0071e3">A</text>
+  <text x="300" y="330" text-anchor="middle" font-size="20" font-weight="700" fill="#0071e3">기준면 A · 하단 스킨 플레이트 ('A' 각인)</text>
+  <!-- drawing direction mark -->
+  <g transform="translate(540 205)">
+    <path d="M0 -60 L22 -22 L-22 -22 Z" fill="#1d1d1f"/>
+    <rect x="-5" y="-24" width="10" height="70" rx="5" fill="#1d1d1f"/>
+    <text x="0" y="74" text-anchor="middle" font-size="16" font-weight="600" fill="#1d1d1f">선수 방향</text>
+  </g>
+  <text x="32" y="52" font-size="22" font-weight="700" fill="#1d1d1f">3번 블록 · 부품 방향 맞추기</text>
+  <text x="32" y="80" font-size="16" fill="#6e6e73">① 도면 ▲ 방향 표시와 블록 선수 방향을 맞추고  ② 기준면 A를 아래로</text>
+</svg>

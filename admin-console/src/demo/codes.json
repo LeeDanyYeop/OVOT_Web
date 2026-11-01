@@ -1,0 +1,186 @@
+{
+ "_source": "OVOT-Backend migrations/006_seed_event_codes_idempotent.sql 와 동일",
+ "event_categories": [
+  {
+   "category_code": "WS",
+   "category_name": "작업 시작"
+  },
+  {
+   "category_code": "WI",
+   "category_name": "작업 지시"
+  },
+  {
+   "category_code": "WP",
+   "category_name": "작업 진행"
+  },
+  {
+   "category_code": "WC",
+   "category_name": "작업 완료"
+  },
+  {
+   "category_code": "QC",
+   "category_name": "품질·검사"
+  },
+  {
+   "category_code": "SM",
+   "category_name": "안전"
+  },
+  {
+   "category_code": "ME",
+   "category_name": "자재·설비"
+  },
+  {
+   "category_code": "CO",
+   "category_name": "작업장 간 협업"
+  }
+ ],
+ "event_types": [
+  {
+   "event_type": "(CO) FOLLOWUP_REQ",
+   "category_code": "CO",
+   "description": "후속 조치 요청"
+  },
+  {
+   "event_type": "(CO) HANDOFF_OK",
+   "category_code": "CO",
+   "description": "작업 인계 수락"
+  },
+  {
+   "event_type": "(CO) HANDOFF_REQ",
+   "category_code": "CO",
+   "description": "작업 인계 요청"
+  },
+  {
+   "event_type": "(ME) EQUIP_FAIL",
+   "category_code": "ME",
+   "description": "장비 고장"
+  },
+  {
+   "event_type": "(ME) MATERIAL_REQ",
+   "category_code": "ME",
+   "description": "자재 요청"
+  },
+  {
+   "event_type": "(ME) SHORTAGE",
+   "category_code": "ME",
+   "description": "자재 부족"
+  },
+  {
+   "event_type": "(QC) FAIL",
+   "category_code": "QC",
+   "description": "검사 불합격"
+  },
+  {
+   "event_type": "(QC) INSPECT_REQ",
+   "category_code": "QC",
+   "description": "검사 요청"
+  },
+  {
+   "event_type": "(QC) PASS",
+   "category_code": "QC",
+   "description": "검사 합격"
+  },
+  {
+   "event_type": "(QC) REWORK",
+   "category_code": "QC",
+   "description": "재작업 필요"
+  },
+  {
+   "event_type": "(SM) HAZARD",
+   "category_code": "SM",
+   "description": "위험 보고"
+  },
+  {
+   "event_type": "(SM) SAFETY_CHECK",
+   "category_code": "SM",
+   "description": "안전 점검 요청"
+  },
+  {
+   "event_type": "(SM) STOP_REQ",
+   "category_code": "SM",
+   "description": "작업 중지 요청"
+  },
+  {
+   "event_type": "(WC) CANCEL",
+   "category_code": "WC",
+   "description": "작업 취소"
+  },
+  {
+   "event_type": "(WC) DONE",
+   "category_code": "WC",
+   "description": "작업 완료"
+  },
+  {
+   "event_type": "(WC) PARTIAL",
+   "category_code": "WC",
+   "description": "일부 완료"
+  },
+  {
+   "event_type": "(WI) INSTRUCT",
+   "category_code": "WI",
+   "description": "작업 지시"
+  },
+  {
+   "event_type": "(WI) METHOD",
+   "category_code": "WI",
+   "description": "작업 방식 변경"
+  },
+  {
+   "event_type": "(WI) PRIORITY",
+   "category_code": "WI",
+   "description": "우선순위 변경"
+  },
+  {
+   "event_type": "(WP) BLOCKED",
+   "category_code": "WP",
+   "description": "작업 진행 불가"
+  },
+  {
+   "event_type": "(WP) DELAY",
+   "category_code": "WP",
+   "description": "작업 지연"
+  },
+  {
+   "event_type": "(WP) PROGRESS",
+   "category_code": "WP",
+   "description": "진행 상황 보고"
+  },
+  {
+   "event_type": "(WS) ASSIGN",
+   "category_code": "WS",
+   "description": "작업 배정"
+  },
+  {
+   "event_type": "(WS) RESUME",
+   "category_code": "WS",
+   "description": "작업 재개"
+  },
+  {
+   "event_type": "(WS) START",
+   "category_code": "WS",
+   "description": "작업 시작"
+  }
+ ],
+ "speech_types": [
+  {
+   "speech_type": "ACK",
+   "description": "확인·응답"
+  },
+  {
+   "speech_type": "CMD",
+   "description": "작업 지시"
+  },
+  {
+   "speech_type": "NRM",
+   "description": "일반 대화"
+  },
+  {
+   "speech_type": "QST",
+   "description": "질문"
+  },
+  {
+   "speech_type": "RPT",
+   "description": "상황 보고"
+  }
+ ]
+}

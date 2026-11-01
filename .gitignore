@@ -1,0 +1,21 @@
+# 공통
+node_modules/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# 비밀값 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# 빌드 산물
+dist/
+.wrangler/
+
+# DB/런타임 데이터
+backend/data/
+*.db
+*.db-wal
+*.db-shm

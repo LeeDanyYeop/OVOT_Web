@@ -1,0 +1,21 @@
+// Cloudflare 배포 설정. `npm run build:demo` 결과인 dist 폴더를 내보내고,
+// worker/index.js 가 /sync/flow (관제 ↔ 작업자 앱 시연 흐름 공유)를 처리한다.
+{
+  "name": "admin",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "FLOW", "class_name": "FlowStore" }, { "name": "FILES", "class_name": "FileStore" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["FlowStore"] }, { "tag": "v2", "new_sqlite_classes": ["FileStore"] }],
+  // 현장 발화·AI 분류 결과(ovot-sync Worker · D1) 조회. 토큰은 Secret OVOT_READ_TOKEN 으로만 둔다.
+  "services": [{ "binding": "OVOT_SYNC", "service": "ovot-sync" }],
+  // 확인 요청의 대화 맥락 판단 모델(OpenAI). 키는 Secret OPENAI_API_KEY 로만 둔다
+  "vars": { "OPENAI_MODEL": "gpt-4.1-mini" },
+  // 블록별 작업 현황 30분 주기 갱신 (FR-09)
+  "triggers": { "crons": ["*/30 * * * *"] }
+}

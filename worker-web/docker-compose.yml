@@ -1,0 +1,13 @@
+services:
+  ovot:
+    build: .
+    ports:
+      - "8100:8100"
+    volumes:
+      - ovot-data:/data
+    environment:
+      OVOT_DUPLICATE_WINDOW_SECONDS: "30"
+      # PostgreSQL later: OVOT_DATABASE_URL: postgresql+psycopg://ovot:ovot@db:5432/ovot
+
+volumes:
+  ovot-data:

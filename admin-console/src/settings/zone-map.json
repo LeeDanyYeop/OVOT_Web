@@ -1,0 +1,132 @@
+{
+  "_comment": "구역 표시 이름·구역도 좌표·Unity 오브젝트·사진 매핑. zone_id 는 OVOT-Backend tasks/voice_records 의 zone_id 와 정확히 같아야 합니다. scene 은 흰 배경 화면 3D 점 작업장에서 이 구역에 속하는 시설 목록(blockYard 블록 조립장 · workshop 공장동 · shipAft 도크 선박 선미부 · gantry 골리앗 크레인 · shipFore 도크 선박 선수부 · quay 안벽)입니다. image 는 public/ 아래 사진 경로, imagePosition 은 사진 잘림 위치(CSS object-position), imageKind 가 ai 면 타일에 AI 생성 이미지 표시가 붙습니다(실사 사진이면 photo 로 바꾸거나 삭제). 모두 배치 예시이며 실제 도면이 아닙니다.",
+  "viewBox": [
+    0,
+    0,
+    1000,
+    640
+  ],
+  "zones": [
+    {
+      "zone_id": "ZONE-A",
+      "label": "작업구역 A",
+      "description": "조립장",
+      "shape": {
+        "x": 40,
+        "y": 330,
+        "w": 450,
+        "h": 270
+      },
+      "unityObject": "Zone_A",
+      "segment": {
+        "from": 150,
+        "to": 340
+      },
+      "scene": [
+        "blockYard"
+      ],
+      "image": "zones/ZONE-A.jpg",
+      "imagePosition": "50% 50%",
+      "imageKind": "ai"
+    },
+    {
+      "zone_id": "ZONE-B",
+      "label": "작업구역 B",
+      "description": "용접장",
+      "shape": {
+        "x": 40,
+        "y": 40,
+        "w": 293,
+        "h": 260
+      },
+      "unityObject": "Zone_B",
+      "segment": {
+        "from": 340,
+        "to": 530
+      },
+      "scene": [
+        "workshop"
+      ],
+      "image": "zones/ZONE-B.jpg",
+      "imagePosition": "50% 50%",
+      "imageKind": "ai"
+    },
+    {
+      "zone_id": "ZONE-C",
+      "label": "작업구역 C",
+      "description": "검사장",
+      "shape": {
+        "x": 353,
+        "y": 40,
+        "w": 293,
+        "h": 260
+      },
+      "unityObject": "Zone_C",
+      "segment": {
+        "from": 530,
+        "to": 720
+      },
+      "scene": [
+        "shipAft",
+        "gantry"
+      ],
+      "image": "zones/ZONE-C.jpg",
+      "imagePosition": "50% 50%",
+      "imageKind": "ai"
+    },
+    {
+      "zone_id": "ZONE-D",
+      "label": "작업구역 D",
+      "description": null,
+      "shape": {
+        "x": 666,
+        "y": 40,
+        "w": 294,
+        "h": 260
+      },
+      "unityObject": "Zone_D",
+      "segment": {
+        "from": 720,
+        "to": 910
+      },
+      "scene": [
+        "shipFore"
+      ],
+      "image": "zones/ZONE-D.jpg",
+      "imagePosition": "50% 50%",
+      "imageKind": "ai"
+    },
+    {
+      "zone_id": "ZONE-E",
+      "label": "작업구역 E",
+      "description": null,
+      "shape": {
+        "x": 510,
+        "y": 330,
+        "w": 450,
+        "h": 270
+      },
+      "unityObject": "Zone_E",
+      "segment": {
+        "from": 910,
+        "to": 1100
+      },
+      "scene": [
+        "quay"
+      ],
+      "image": "zones/ZONE-E.jpg",
+      "imagePosition": "50% 50%",
+      "imageKind": "ai"
+    }
+  ],
+  "unityObjects": [
+    {
+      "object": "Block_P1",
+      "block_id": "P-1"
+    },
+    {
+      "object": "Block_P2",
+      "block_id": "P-2"
+    }
+  ]
+}
