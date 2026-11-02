@@ -113,30 +113,16 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
         }).catch((e: unknown) => console.warn('OSM 건물', e))
       }
 
-      // 첫 장면 — 멀리서 지구가 한 바퀴 돌고 한반도로 다가간다
+      // 첫 장면 — 들어오자마자 멀리 반대편에서 지구가 돌며 곧장 골라 둔 사업장(울산)으로 날아간다.
+      // 출발점을 경도 150도 떨어진 곳에 두고 바로 flyTo 하면, 날아가는 동안 지구가 돌아오는 것처럼 보인다
       const KOREA = C.Cartesian3.fromDegrees(125.6, 27.4, 1.5e6) // 목록 패널이 왼쪽을 가려서 한반도가 오른쪽에 오도록
       const koreaView = { destination: KOREA, orientation: { heading: 0, pitch: C.Math.toRadians(-55), roll: 0 } }
-      viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(126.2 + 200, 22, 2.6e7) })
-      // 처음 2.8초 동안 지구 자전축을 기준으로 200도 돌린다(빠르게 시작해 천천히 멈춤)
-      const SPIN = 2800, ANGLE = (Math.PI * 200) / 180
-      let t0 = 0, turned = 0, spinning = true
-      const turn = () => {
-        const now = performance.now()
-        if (!t0) t0 = now
-        const k = Math.min(1, (now - t0) / SPIN), want = ANGLE * (1 - (1 - k) ** 3)
-        viewer.camera.rotate(C.Cartesian3.UNIT_Z, -(want - turned))
-        turned = want
-        if (k >= 1) { spinning = false; scene.preRender.removeEventListener(turn); if (!dead) { if (wantAll) all(); else go(current, 2.4) } }
-      }
-      scene.preRender.addEventListener(turn)
-      // 사용자가 지구본을 직접 잡으면 첫 회전을 멈춘다
-      scene.canvas.addEventListener('pointerdown', () => { if (spinning) { t0 = performance.now() - SPIN } }, { once: true })
+      viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(129.4 + 150, 20, 2.6e7) })
+      const FIRST = 4.2
+      let first = true
 
-      let current: string | null = null, wantAll = false
       const go = (id: string | null, dur = 2.6) => {
-        current = id
-        wantAll = false
-        if (spinning) return // 첫 회전이 끝나면 그때 이동
+        if (first) { first = false; dur = FIRST }
         const s = SITES.find((x) => x.id === id)
         if (!s) { viewer.camera.flyTo({ ...koreaView, duration: dur }); return }
         // 왼쪽 목록 패널에 가리지 않도록 사업장 조금 서쪽을 화면 가운데로 — 사업장은 오른쪽에 보인다
@@ -146,9 +132,9 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
       }
       // 전체 보기 — 국내 야드부터 수빅까지 한 화면에
       const all = () => {
-        wantAll = true
-        if (spinning) return // 첫 회전이 끝나면 그때 이동
-        viewer.camera.flyTo({ destination: C.Cartesian3.fromDegrees(119, 23.5, 4.6e6), duration: 2.2 })
+        const dur = first ? FIRST : 2.2
+        first = false
+        viewer.camera.flyTo({ destination: C.Cartesian3.fromDegrees(119, 23.5, 4.6e6), duration: dur })
       }
       api.current = { go, all }
       setReady(true)
