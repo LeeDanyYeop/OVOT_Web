@@ -560,7 +560,7 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
           <button className="bi-card-link" onClick={() => pickPart(part)}>나눈 블록 전체 보기 ›</button>
         </div>
       ) : explode && !cur ? (
-        <div className="bi-card"><p className="bi-card-kind"><Icon name="explode" />블록 나누기</p><h3>안쪽 블록 {partList.length}개</h3><p>이름표를 누르면 그 블록만 남기고 나머지는 흐려져요. 다시 누르면 전체로 돌아와요.</p></div>
+        null
       ) : cur ? (
         <div className={`bi-card ${curReq ? 'is-alert' : ''}`}>
           <p className="bi-card-kind"><Icon name={curReq ? 'alert' : 'plan'} />{curReq ? '현장 확인 요청 위치' : '작업 예정 위치'}</p>
