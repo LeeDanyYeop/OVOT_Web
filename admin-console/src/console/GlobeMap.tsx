@@ -67,7 +67,11 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
         baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
         animation: false, timeline: false, fullscreenButton: false, infoBox: false, selectionIndicator: false,
         creditContainer: credit.current,
+        // 기본값은 폰에서도 1배 해상도로 그려 글자가 흐리다 — 화면 해상도대로(폰 부담을 생각해 최대 2배)
+        useBrowserRecommendedResolution: false,
       })
+      const dpr = window.devicePixelRatio || 1
+      viewer.resolutionScale = Math.min(dpr, 2) / dpr
       const scene = viewer.scene
       if (import.meta.env.DEV) (window as any).__globe = viewer
       scene.globe.baseColor = C.Color.fromCssColorString('#030b1c')
@@ -75,15 +79,17 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
       scene.globe.showGroundAtmosphere = true
       scene.screenSpaceCameraController.minimumZoomDistance = 300
 
+      // 이름표는 글자를 크게 그린 뒤 줄여서 고해상도 화면에서도 또렷하게
+      const TX = Math.max(2, Math.ceil(dpr))
       for (const s of SITES) {
         viewer.entities.add({
           id: s.id,
           position: C.Cartesian3.fromDegrees(s.lon, s.lat, 30),
           billboard: { image: pin(s.live), width: s.live ? 38 : 30, height: s.live ? 38 : 30, disableDepthTestDistance: 2e5 },
           label: {
-            text: s.live ? s.name : `${s.name}\n데이터 준비 중`, font: '600 13px "Apple SD Gothic Neo","Malgun Gothic",sans-serif',
+            text: s.live ? s.name : `${s.name}\n데이터 준비 중`, font: `600 ${13 * TX}px "Apple SD Gothic Neo","Malgun Gothic",sans-serif`, scale: 1 / TX,
             fillColor: C.Color.WHITE, showBackground: true, backgroundColor: C.Color.fromCssColorString('rgba(8,16,34,0.82)'),
-            backgroundPadding: new C.Cartesian2(9, 6), pixelOffset: new C.Cartesian2(0, -34),
+            backgroundPadding: new C.Cartesian2(9 * TX, 6 * TX), pixelOffset: new C.Cartesian2(0, -34),
             verticalOrigin: C.VerticalOrigin.BOTTOM, disableDepthTestDistance: 2e5,
             // 지구 전체를 볼 때는 이름표가 겹치므로 가까이 갔을 때만
             distanceDisplayCondition: new C.DistanceDisplayCondition(0, s.live ? 2.4e6 : s.region === '국내' ? 4e5 : 6e6),

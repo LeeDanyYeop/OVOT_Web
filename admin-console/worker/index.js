@@ -4,7 +4,7 @@
 import { DurableObject } from 'cloudflare:workers'
 import { WORKER_NAMES, demoReview, demoUtterances } from './demoB04.js'
 import { demoB02Review, demoB02Utterances } from './demoB02.js'
-import { demoB01Review, demoB01Utterances } from './demoB01.js'
+import { demoB01At, demoB01Review, demoB01Utterances } from './demoB01.js'
 import { updateStatus } from './status.js'
 import { checkRelay } from './relay.js'
 import { makeHandover } from './handover.js'
@@ -123,7 +123,7 @@ export default {
       try {
         const named = (u) => ({ ...u, worker_name: u.worker_name ?? WORKER_NAMES[u.worker_id] ?? null })
         const [all, drawings, status, acks] = await Promise.all([fetchUtterances(env, 200), sharedGet(env, 'drawings'), sharedGet(env, 'status'), sharedGet(env, 'acks')])
-        const utterances = [...demoUtterances(), ...demoB02Utterances(), ...afterReset(all, acks)].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
+        const utterances = [...demoUtterances(), ...demoB02Utterances(), ...demoB01Utterances(demoB01At(acks)), ...afterReset(all, acks)].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
         const h = await makeHandover(env, block, { utterances, drawings, status: status?.[block]?.current })
         return Response.json(h, { headers: { ...headers, 'Cache-Control': 'no-store' } })
       } catch (e) {
@@ -166,13 +166,11 @@ export default {
         ])
         // B-04 공정 충돌 시연 데이터(하드코딩)를 실제 녹음과 섞어 보낸다. AI 판단은 실제 녹음만 대상으로 한다
         const named = (u) => ({ ...u, worker_name: u.worker_name ?? WORKER_NAMES[u.worker_id] ?? null })
-        // B-01 설계 검토 요청 시연(영상 촬영용) — 관제에서 Ctrl+Shift+1 을 누른 뒤로, 시연 초기화 전까지만
-        const b01At = typeof acks?.__demoB01 === 'string' ? acks.__demoB01 : null
-        const b01 = b01At && new Date(b01At).getTime() >= (typeof acks?.__since === 'string' ? new Date(acks.__since).getTime() || 0 : 0)
-        const utterances = [...demoUtterances(), ...demoB02Utterances(), ...(b01 ? demoB01Utterances(b01At) : []), ...real].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
+        // B-01 러그 설계 검토 요청 시연도 항상 (Ctrl+Shift+1 을 누르면 그 시각에 들어온 것으로)
+        const utterances = [...demoUtterances(), ...demoB02Utterances(), ...demoB01Utterances(demoB01At(acks)), ...real].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
         // 배포된 도면 중 아직 전달 확인이 안 된 것 — 현장 발화에서 전달한 말이 있는지 뒤에서 확인 (응답은 기다리지 않음)
         ctx.waitUntil(relayFromVoice(env, drawings, utterances).catch((e) => console.error('relay', e && e.message)))
-        const demos = [demoReview(), demoB02Review(), ...(b01 ? [demoB01Review()] : [])]
+        const demos = [demoReview(), demoB02Review(), demoB01Review()]
         const review2 = rv.conversations ? { conversations: [...demos, ...rv.conversations] } : { ...rv, conversations: demos }
         return Response.json({ utterances, acks, drawings, status, review: review2 }, { headers: { 'Cache-Control': 'no-store' } })
       } catch (e) {
@@ -185,13 +183,14 @@ export default {
       const body = await request.json().catch(() => null)
       try {
         const named = (u) => ({ ...u, worker_name: u.worker_name ?? WORKER_NAMES[u.worker_id] ?? null })
-        const [real, drawings, status, rv] = await Promise.all([
+        const [real, drawings, status, acks, rv] = await Promise.all([
           fetchUtterances(env, 200).catch(() => []),
           sharedGet(env, 'drawings'),
           sharedGet(env, 'status'),
-        ]).then(async ([u, d, st]) => [u, d, st, await review(env, u).catch(() => ({ conversations: [] }))])
-        const utterances = [...demoUtterances(), ...demoB02Utterances(), ...real].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
-        const r = await chat(env, body?.messages, { status, drawings, conversations: [demoReview(), demoB02Review(), ...(rv.conversations ?? [])], utterances })
+          sharedGet(env, 'acks'),
+        ]).then(async ([u, d, st, a]) => [u, d, st, a, await review(env, u).catch(() => ({ conversations: [] }))])
+        const utterances = [...demoUtterances(), ...demoB02Utterances(), ...demoB01Utterances(demoB01At(acks)), ...real].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
+        const r = await chat(env, body?.messages, { status, drawings, conversations: [demoReview(), demoB02Review(), demoB01Review(), ...(rv.conversations ?? [])], utterances })
         return Response.json(r, { headers: { 'Cache-Control': 'no-store' } })
       } catch (e) {
         return Response.json({ reply: `답을 가져오지 못했어요. ${String(e && e.message ? e.message : e)}` }, { status: 503 })
@@ -226,7 +225,7 @@ async function runStatus(env, block) {
   const named = (u) => ({ ...u, worker_name: u.worker_name ?? WORKER_NAMES[u.worker_id] ?? null })
   const [all, acks] = await Promise.all([fetchUtterances(env, 200), sharedGet(env, 'acks')])
   // 시연 초기화(__since) 전 발화는 현황 요약에도 넣지 않는다
-  const utterances = [...demoUtterances(), ...demoB02Utterances(), ...afterReset(all, acks)].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
+  const utterances = [...demoUtterances(), ...demoB02Utterances(), ...demoB01Utterances(demoB01At(acks)), ...afterReset(all, acks)].map(named).sort((a, b) => String(b.recorded_at).localeCompare(String(a.recorded_at)))
   const store = env.FLOW.get(env.FLOW.idFromName('status'))
   const [prev, orders] = await Promise.all([store.fetch('https://do/state').then((r) => r.json()).catch(() => ({})), sharedGet(env, 'drawings')])
   const { updatedAt: _u, log: _l, ...clean } = prev || {}

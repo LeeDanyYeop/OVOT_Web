@@ -1,6 +1,6 @@
-// B-01 러그·보강 설계 검토 요청 시연 데이터 (하드코딩, 영상 촬영용).
-// 관제에서 Ctrl+Shift+1 을 누르면 acks.__demoB01 에 그 시각이 남고, 그때 현장 스트리밍으로 들어온 것처럼
-// 발화 3줄과 설계팀(선체설계 책임)으로 가는 확인 요청을 /api/state 에 섞어 보낸다. 시연 초기화를 누르면 사라진다.
+// B-01 러그·보강 설계 검토 요청 시연 데이터 (하드코딩). B-04·B-02 처럼 항상 /api/state 에 섞어 보낸다.
+// 발화 3줄과 설계팀(선체설계 책임)으로 가는 확인 요청. 관제에서 Ctrl+Shift+1 을 누르면 acks.__demoB01 에 그 시각이 남고,
+// 그 시각에 현장 스트리밍으로 막 들어온 것처럼 시각이 바뀐다.
 
 const L = (category, subcategory, evidence, confidence = 0.92) => ({ category, subcategory, evidence, confidence, needs_review: false })
 
@@ -13,6 +13,16 @@ const LINES = [
     [L('발화 의도', '협의·조율', '작업자들하고 같이 보겠습니다')]],
 ]
 const id = (i) => `DEMO-B01-${String(i + 1).padStart(2, '0')}`
+
+// 언제 말한 것으로 둘지: 시연 초기화 뒤에 Ctrl+Shift+1 을 눌렀으면 그 시각, 아니면 오늘(한국 시간) 09:40.
+// B-04·B-02 처럼 단축키 없이도 항상 보인다
+export function demoB01At(acks) {
+  const at = typeof acks?.__demoB01 === 'string' ? acks.__demoB01 : null
+  const since = typeof acks?.__since === 'string' ? new Date(acks.__since).getTime() || 0 : 0
+  if (at && new Date(at).getTime() >= since) return at
+  const d = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)
+  return `${d}T09:40:00+09:00`
+}
 
 // at: 단축키를 누른 시각(ISO). 0·8·15초 뒤에 말한 것으로 둔다
 export function demoB01Utterances(at) {

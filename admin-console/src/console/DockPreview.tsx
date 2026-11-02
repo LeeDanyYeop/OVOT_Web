@@ -121,9 +121,9 @@ export function DockPreview({ role }: { role: Role }) {
   const [zoomN,setZoomN] = useState(0)
   useEffect(()=>{ setInspect(null); if(!selected) return; const t=window.setTimeout(()=>setInspect(selected),1300); return ()=>clearTimeout(t) },[selected,zoomN])
   useEffect(()=>{document.title='OVOT 관제 · 도크 현황'},[])
-  // 영상 촬영용: Ctrl+Shift+1 → 현장 스트리밍으로 B-01 설계 검토 요청이 들어온 것처럼 (10초 안에 모든 관제 화면에 뜸, 시연 초기화로 사라짐)
+  // 영상 촬영용: Ctrl+Shift+1 → B-01 러그 설계 검토 요청(항상 있는 시연 데이터)이 지금 현장 스트리밍으로 막 들어온 것처럼 — 확인 처리했어도 다시 뜬다
   useEffect(()=>{
-    const onKey=(e:KeyboardEvent)=>{ if(!(e.ctrlKey&&e.shiftKey&&e.code==='Digit1')) return; e.preventDefault(); void fetch('/sync/acks',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({__demoB01:new Date().toISOString()})}).catch(()=>{}) }
+    const onKey=(e:KeyboardEvent)=>{ if(!(e.ctrlKey&&e.shiftKey&&e.code==='Digit1')) return; e.preventDefault(); void fetch('/sync/acks',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({__demoB01:new Date().toISOString(),'DEMO-B01-01':null})}).catch(()=>{}) }
     window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey)
   },[])
   const utt = useUtterances()
