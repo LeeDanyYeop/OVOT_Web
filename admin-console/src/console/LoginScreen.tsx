@@ -16,8 +16,8 @@ export function LoginScreen() {
   const [role, setRole] = useState<Role>('lead')
   const [leadId, setLeadId] = useState<string>(() => { try { return localStorage.getItem(LEAD_KEY) || 'W1' } catch { return 'W1' } })
   const u = USERS[role]
-  // 지도에서 고른 조선소. 지금은 관제가 연결된 울산만 로그인할 수 있다
-  const [yardId, setYardId] = useState<string | null>(null)
+  // 지도에서 고른 조선소. 지금은 관제가 연결된 울산만 로그인할 수 있어서 울산을 기본으로 골라 둔다
+  const [yardId, setYardId] = useState<string | null>('ulsan')
   const yard = SITES.find((y) => y.id === yardId) ?? null
   const canLogin = !!yard?.live
 

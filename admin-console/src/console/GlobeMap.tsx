@@ -11,7 +11,6 @@ export type Site = { id: string; name: string; lon: number; lat: number; live: b
 // 해외 사업장 — 시연용 위치(대략). 실제 목록은 별도 확정 필요
 const OVERSEAS: Site[] = [
   { id: 'subic', name: 'HD현대필리핀 수빅 조선소', lon: 120.26, lat: 14.77, live: false, region: '해외' },
-  { id: 'houston', name: 'HD현대 미국 법인 (휴스턴)', lon: -95.37, lat: 29.76, live: false, region: '해외' },
 ]
 export const SITES: Site[] = [
   ...SHIPYARDS.map((y): Site => ({ id: y.id, name: y.name, lon: y.lon, lat: y.lat, live: y.live, region: '국내' })),
@@ -48,11 +47,13 @@ const pin = (live: boolean) => `data:image/svg+xml,${encodeURIComponent(`<svg xm
 export function GlobeMap({ selected, onSelect }: { selected: string | null; onSelect: (id: string | null) => void }) {
   const host = useRef<HTMLDivElement>(null)
   const credit = useRef<HTMLDivElement>(null)
-  const api = useRef<{ go: (id: string | null) => void } | null>(null)
+  const api = useRef<{ go: (id: string | null) => void; all: () => void } | null>(null)
   const pick = useRef(onSelect)
   pick.current = onSelect
   const [failed, setFailed] = useState(false)
   const [ready, setReady] = useState(false)
+  // 목록은 관제가 연결된 사업장만 보이다가 '전체 보기'를 누르면 나머지(미포~수빅)까지 펼친다
+  const [all, setAll] = useState(false)
 
   useEffect(() => {
     let viewer: any = null, dead = false
@@ -125,15 +126,16 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
         const k = Math.min(1, (now - t0) / SPIN), want = ANGLE * (1 - (1 - k) ** 3)
         viewer.camera.rotate(C.Cartesian3.UNIT_Z, -(want - turned))
         turned = want
-        if (k >= 1) { spinning = false; scene.preRender.removeEventListener(turn); if (!dead) go(current, 2.4) }
+        if (k >= 1) { spinning = false; scene.preRender.removeEventListener(turn); if (!dead) { if (wantAll) all(); else go(current, 2.4) } }
       }
       scene.preRender.addEventListener(turn)
       // 사용자가 지구본을 직접 잡으면 첫 회전을 멈춘다
       scene.canvas.addEventListener('pointerdown', () => { if (spinning) { t0 = performance.now() - SPIN } }, { once: true })
 
-      let current: string | null = null
+      let current: string | null = null, wantAll = false
       const go = (id: string | null, dur = 2.6) => {
         current = id
+        wantAll = false
         if (spinning) return // 첫 회전이 끝나면 그때 이동
         const s = SITES.find((x) => x.id === id)
         if (!s) { viewer.camera.flyTo({ ...koreaView, duration: dur }); return }
@@ -142,23 +144,30 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
           offset: new C.HeadingPitchRange(C.Math.toRadians(25), C.Math.toRadians(-32), 4200), duration: dur + (s.region === '해외' ? 1 : 0),
         })
       }
-      api.current = { go }
+      // 전체 보기 — 국내 야드부터 수빅까지 한 화면에
+      const all = () => {
+        wantAll = true
+        if (spinning) return // 첫 회전이 끝나면 그때 이동
+        viewer.camera.flyTo({ destination: C.Cartesian3.fromDegrees(119, 23.5, 4.6e6), duration: 2.2 })
+      }
+      api.current = { go, all }
       setReady(true)
     }).catch(() => { if (!dead) setFailed(true) })
     return () => { dead = true; api.current = null; if (viewer && !viewer.isDestroyed()) viewer.destroy() }
   }, [])
 
   useEffect(() => { api.current?.go(selected) }, [selected, ready])
+  useEffect(() => { if (all) api.current?.all() }, [all, ready])
 
   if (failed) return <KoreaMap selected={selected} onSelect={(id) => onSelect(id)} />
   return (
     <div className="gl-root">
       <div className="gl-globe" ref={host} />
       <aside className="gl-panel" aria-label="사업장 선택">
-        {(['국내', '해외'] as const).map((r) => (
+        {(all ? (['국내', '해외'] as const) : (['국내'] as const)).map((r) => (
           <div key={r} className="gl-group">
             <h3>{r}</h3>
-            {SITES.filter((s) => s.region === r).map((s) => (
+            {SITES.filter((s) => s.region === r && (all || s.live)).map((s) => (
               <button key={s.id} type="button" aria-pressed={selected === s.id} className={s.live ? 'is-live' : 'is-off'} onClick={() => onSelect(s.id)}>
                 <i />
                 <span><b>{s.name}</b><small>{s.live ? '관제 연결됨' : '데이터 준비 중'}</small></span>
@@ -166,7 +175,9 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
             ))}
           </div>
         ))}
-        {selected && <button type="button" className="gl-all" onClick={() => onSelect(null)}>전체 보기</button>}
+        {all
+          ? <button type="button" className="gl-all" onClick={() => { setAll(false); api.current?.go(selected) }}>접기</button>
+          : <button type="button" className="gl-all" onClick={() => setAll(true)}>전체 보기</button>}
       </aside>
       <div className="gl-credit" ref={credit} />
     </div>

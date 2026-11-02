@@ -39,8 +39,12 @@ function writeJson(key: string, v: unknown) {
 }
 
 const ui0 = readJson<Pick<Snapshot, 'role' | 'screen' | 'filter'>>(UI_KEY)
+// 로그인은 이 탭에서만 기억한다 — 새로 접속하면 늘 로그인 화면부터 (새로고침은 그대로 유지)
+const SESSION_KEY = 'ovot-session'
+const sessionOn = () => { try { return window.sessionStorage.getItem(SESSION_KEY) === '1' } catch { return false } }
+const sessionSet = (on: boolean) => { try { if (on) window.sessionStorage.setItem(SESSION_KEY, '1'); else window.sessionStorage.removeItem(SESSION_KEY) } catch { /* 저장 불가 */ } }
 let snap: Snapshot = {
-  role: ui0?.role ?? null,
+  role: sessionOn() ? ui0?.role ?? null : null,
   screen: ui0?.screen ?? 'overview',
   filter: ui0?.filter ?? 'all',
   state: readJson<DemoState>(STATE_KEY) ?? INITIAL_STATE,
@@ -85,8 +89,8 @@ export const demoStore = {
     return () => listeners.delete(l)
   },
   get: () => snap,
-  login: (role: Role) => set({ role, screen: role === 'lead' ? 'overview' : 'drawing', filter: 'all' }),
-  logout: () => set({ role: null, filter: 'all' }),
+  login: (role: Role) => { sessionSet(true); set({ role, screen: role === 'lead' ? 'overview' : 'drawing', filter: 'all' }) },
+  logout: () => { sessionSet(false); set({ role: null, filter: 'all' }) },
   go: (screen: Screen) => set({ screen }),
   setFilter: (filter: FlagFilter) => set({ filter }),
   decide: (id: FlagId, key: string) => setState(decide(snap.state, id, key), true),
