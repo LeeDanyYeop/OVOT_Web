@@ -125,9 +125,9 @@ export function GlobeMap({ selected, onSelect }: { selected: string | null; onSe
         if (first) { first = false; dur = FIRST }
         const s = SITES.find((x) => x.id === id)
         if (!s) { viewer.camera.flyTo({ ...koreaView, duration: dur }); return }
-        // 왼쪽 목록 패널에 가리지 않도록 사업장 조금 서쪽을 화면 가운데로 — 사업장은 오른쪽에 보인다
-        viewer.camera.flyToBoundingSphere(new C.BoundingSphere(C.Cartesian3.fromDegrees(s.lon - 0.016, s.lat - 0.004, 0), 600), {
-          offset: new C.HeadingPitchRange(C.Math.toRadians(25), C.Math.toRadians(-32), 4200), duration: dur + (s.region === '해외' ? 1 : 0),
+        // 사업장을 화면 가운데에 두고 위에서 비스듬히 내려다본다
+        viewer.camera.flyToBoundingSphere(new C.BoundingSphere(C.Cartesian3.fromDegrees(s.lon, s.lat, 0), 600), {
+          offset: new C.HeadingPitchRange(C.Math.toRadians(48), C.Math.toRadians(-50), 4300), duration: dur + (s.region === '해외' ? 1 : 0),
         })
       }
       // 전체 보기 — 국내 야드부터 수빅까지 한 화면에
