@@ -42,7 +42,7 @@ def test_full_check_in_flow_with_realtime_event(client):
         assert body["status"] == "changed"
         assert body["worker_id"] == "W-001"
         assert body["zone_id"] == "ZONE-A"
-        assert body["zone_name"] == "B-01 중앙 블록 작업장"
+        assert body["zone_name"] == "B-01 선미 블록 작업장"
         assert body["previous_zone_id"] == "ZONE-OUT"
         assert body["checked_in_at"].endswith("+09:00")
 
@@ -232,7 +232,7 @@ def test_end_workday_checks_out_and_briefs(client):
     assert res.status_code == 200, res.text
     body = res.json()
     assert body["source"] == "template"  # no AI key in tests
-    assert body["facts"]["zones"][0]["zone"] == "B-01 중앙 블록 작업장"
+    assert body["facts"]["zones"][0]["zone"] == "B-01 선미 블록 작업장"
     assert body["facts"]["remaining_steps"][0] == "슬래그 제거 후 2·3층 적층"
     assert body["summary"]["next"][0].endswith("슬래그 제거 후 2·3층 적층")
     assert body["facts"]["questions"]["count"] == 1
@@ -254,7 +254,7 @@ def test_start_handover_lists_yesterday_and_today(client):
     res = client.get("/api/workday/handover", headers=worker)
     assert res.status_code == 200, res.text
     h = res.json()
-    assert h["zone"] == "B-01 중앙 블록 작업장" and h["zone_tag"] == "OVOT-ZONE-A-001"
+    assert h["zone"] == "B-01 선미 블록 작업장" and h["zone_tag"] == "OVOT-ZONE-A-001"
     assert h["next_action"] == "선미 쪽 1.2m부터 이어서 작업"
     assert h["progress"]["percent"] == 60
     assert [x["state"] for x in h["steps"]] == ["done", "done", "now", "next", "next"]

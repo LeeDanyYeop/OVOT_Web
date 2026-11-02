@@ -21,8 +21,10 @@ const DOCK_ICON: Record<string, string> = {
   도크2: 'M2 16.5h20 M5 16.5v-3h14v3 M8 13.5l1-3.5h6l1 3.5 M12 10V5.5',
 }
 const MAX_DIST = Math.hypot(145, 175, 193)
-const SHIP_SCALE = 1.4 // 배 크기 배율(도크·B-01 위치도 이에 맞춤)
-const B01_Z = 47 // 뒤집어 놓은 B-01 이 놓인 지상 위치(z)
+const SHIP_SCALE = 1.4 // 배 크기 배율(도크·지상 블록 위치도 이에 맞춤)
+const B01_Z = 47 // 뒤집어 놓은 중앙 블록(B-04)이 놓인 지상 위치(z)
+// 모델 파일(ship-blocks.glb)의 노드 이름 — 시연 블록 번호와 모양을 바꿔 쓴다(선미 = B-01, 중앙 = B-04)
+const NODE_OF: Record<string, string> = { 'B-01': 'B-04', 'B-04': 'B-01' }
 // 크레인 거더 로고 — 초록 엠블럼 다음에 HYUNDAI (cx: 로고 묶음 가운데, cy: 세로 가운데, h: 엠블럼 높이)
 function drawHyundaiLogo(ctx: CanvasRenderingContext2D, cx: number, cy: number, h: number) {
   ctx.font = `800 ${Math.round(h * 0.9)}px -apple-system, "Segoe UI", sans-serif`
@@ -570,7 +572,7 @@ export function TwinScene({ selected, onSelect, progressOf, alerts = [], onAlert
       scene.add(model)
       model.updateMatrixWorld(true)
       for (const info of blocks) {
-        const g = model.getObjectByName(info.id)
+        const g = model.getObjectByName(NODE_OF[info.id] ?? info.id)
         if (!g) continue
         const bb = new THREE.Box3().setFromObject(g)
         const size = bb.getSize(new THREE.Vector3())

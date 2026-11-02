@@ -1,19 +1,19 @@
 import { useState } from 'react'
-import { sendOrder } from './Drawings'
+import type { OrderDraft } from './Drawings'
 import { blocks as twin } from '../twinBlocks'
 import { acknowledge, chipsOf, conversations, forRole, isAcked, undoAck, useUtterances, when, type Convo } from '../utterances'
 
 // 확인 요청 — AI 가 대화 맥락을 보고 결론이 확인 필요하다고 판단한 대화만, 내 역할(현장 담당자·설계자)에 맞는 것만
-// B-04 시연에서 담당자가 보낼 지시 문안 (수정해서 보낼 수 있다)
+// B-04·B-02 시연에서 담당자가 보낼 지시 문안 (수정해서 보낼 수 있다)
 const PRESET: Record<string, string> = {
   'DEMO-B04-01': 'B-04 1구역: 전기팀 케이블 트레이 브래킷 용접(11시 완료 예정)을 먼저 끝내고, 방수팀은 그동안 2구역부터 2차 도포를 진행하세요. 1구역 도포는 용접 종료·불티 정리 확인 후 시작합니다.',
+  'DEMO-B02-01': 'B-02 운송: 방수팀은 B-04 받침대 옆 자재를 13시까지 도크 진입로 밖 적치장으로 옮기세요. 트랜스포터는 자재 이동 확인 후 바로 진입하고, 골리앗 탑재는 14시 슬롯 그대로 진행합니다.',
 }
 
-export function ReviewQueue({ by, role, onBlock, onDrawing }: { by: string; role: 'lead' | 'designer'; onBlock: (id: string) => void; onDrawing?: (block: string | null) => void }) {
+export function ReviewQueue({ by, role, onBlock, onDrawing, onOrder }: { by: string; role: 'lead' | 'designer'; onBlock: (id: string) => void; onDrawing?: (block: string | null) => void; onOrder?: (o: OrderDraft) => void }) {
   const s = useUtterances()
   const [showDone, setShowDone] = useState(false)
   const [openCtx, setOpenCtx] = useState<string | null>(null)
-  const [writing, setWriting] = useState<{ id: string; text: string } | null>(null)
   const all = conversations(s.items ?? [], s.reviews).filter((c) => forRole(c, role))
   const open = all.filter((c) => !isAcked(c, s.acks))
   const done = all.filter((c) => isAcked(c, s.acks))
@@ -37,21 +37,12 @@ export function ReviewQueue({ by, role, onBlock, onDrawing }: { by: string; role
           {ack
             ? <button className="cn-link" onClick={() => void undoAck(c.id)}>되돌리기</button>
             : role === 'lead'
-              ? <button className="cn-btn cn-btn-primary" onClick={() => setWriting({ id: c.id, text: PRESET[c.id] ?? '' })}>작업 지시 보내기</button>
+              ? <button className="cn-btn cn-btn-primary" onClick={() => onOrder?.({ block: c.block, text: PRESET[c.id] ?? '', from: c.id, ack: () => void acknowledge(c, by) })}>작업 지시</button>
               : <button className="cn-btn cn-btn-primary" onClick={() => { void acknowledge(c, by); onDrawing?.(c.block) }}>도면 변경하기</button>}
           {!ack && <button className="cn-link" onClick={() => void acknowledge(c, by)}>조치 없이 확인</button>}
           <button className="cn-link" onClick={() => setOpenCtx(openCtx === c.id ? null : c.id)}>{openCtx === c.id ? '대화 접기' : '대화 전체 보기'}</button>
           {c.block && <button className="cn-link" onClick={() => onBlock(c.block!)}>3D에서 보기</button>}
         </div>
-        {writing?.id === c.id && (
-          <div className="dp-order">
-            <label className="cn-field">현장 작업자에게 보낼 지시<textarea value={writing.text} onChange={(e) => setWriting({ id: c.id, text: e.target.value })} placeholder="무엇을 어떻게 하라고 할지 적어 주세요" /></label>
-            <div className="dp-order-foot">
-              <button className="cn-link" onClick={() => setWriting(null)}>취소</button>
-              <button className="cn-btn cn-btn-primary" disabled={!writing.text.trim() || !c.block} onClick={() => { sendOrder({ block: c.block!, note: writing.text.trim(), by, from: c.id }); void acknowledge(c, by); setWriting(null) }}>지시 보내기</button>
-            </div>
-          </div>
-        )}
         {openCtx === c.id && (
           <ol className="dp-chat">
             {c.lines.map((l) => (

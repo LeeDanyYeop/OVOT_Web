@@ -42,8 +42,15 @@ export function LoginScreen() {
       >
         <h2>관리자 로그인</h2>
         <p className={`cn-login-yard${canLogin ? ' is-ok' : yard ? ' is-off' : ''}`}>
-          {!yard ? '왼쪽 지구본에서 사업장을 선택하세요' : canLogin ? yard.name : `${yard.name} · 데이터 준비 중이라 아직 로그인할 수 없어요`}
+          {!yard ? '지구본이나 아래 목록에서 사업장을 선택하세요' : canLogin ? yard.name : `${yard.name} · 데이터 준비 중이라 아직 로그인할 수 없어요`}
         </p>
+        {/* 폰에서는 지구본 핀이 작아 누르기 어려워서 목록으로도 고른다 */}
+        <label className="cn-login-yardpick">사업장 선택
+          <select value={yardId ?? ''} onChange={(e) => setYardId(e.target.value || null)} style={ID_STYLE}>
+            <option value="">사업장을 고르세요</option>
+            {SITES.map((y) => <option key={y.id} value={y.id} disabled={!y.live}>{y.name}{y.live ? '' : ' (준비 중)'}</option>)}
+          </select>
+        </label>
         <fieldset className="cn-login-body" disabled={!canLogin}>
 
         <fieldset className="cn-roles">

@@ -22,6 +22,7 @@ const ICONS: Record<string, string> = {
   reinforce: 'M4 20.5V5l15.5 15.5z M4 14h6.5 M8 20.5V12',
   coat: 'M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z M9.5 15a2.6 2.6 0 0 0 2.5 2.4',
   tray: 'M13 2.5L5 13.5h6l-1 8 8-11h-6z',
+  route: 'M2.5 16.5V7h11v9.5 M13.5 10h4l3 3.5v3h-7 M6 19a2 2 0 1 0 0-.01 M17 19a2 2 0 1 0 0-.01',
   alert: 'M12 3.5l9.5 17h-19z M12 10v5 M12 17.6v.01',
   plan: 'M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z M12 9.5v.01',
   explode: 'M9 3.5H4.5v4.5 M15 3.5h4.5v4.5 M9 20.5H4.5V16 M15 20.5h4.5V16 M9.5 9.5h5v5h-5z',
@@ -29,10 +30,10 @@ const ICONS: Record<string, string> = {
 function Icon({ name }: { name: string }) {
   return <svg className="bi-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[name] ?? ICONS.plan} /></svg>
 }
-// 블록별 마감 상태 — B-01·B-02 는 공장 프라이머만(용접선이 맨 강재로 보임), B-04 는 방수 1차가 끝난 선저만 도장, B-03 은 전체 도장
+// 블록별 마감 상태 — B-04·B-02 는 공장 프라이머만(용접선이 맨 강재로 보임), B-01(선미) 은 선저만 도장, B-03 은 전체 도장
 type Look = 'primer' | 'bottom' | 'done'
-const LOOK: Record<string, Look> = { 'B-01': 'primer', 'B-02': 'primer', 'B-04': 'bottom', 'B-03': 'done' }
-const hullWL: Record<string, number> = { 'B-03': 3.4, 'B-04': 3.0 } // 선저 도장 높이(흘수선)
+const LOOK: Record<string, Look> = { 'B-04': 'primer', 'B-02': 'primer', 'B-01': 'bottom', 'B-03': 'done' }
+const hullWL: Record<string, number> = { 'B-03': 3.4, 'B-01': 3.0 } // 선저 도장 높이(흘수선)
 const PRIMER = '#7a4b3c', PRIMER_IN = '#9a6a59', COAT_IN = '#cdbf9f'
 function finishOf(f: Finish, look: Look, color: string, wl: number): { color: string; rough: number; metal: number; surface: Surface } {
   const coated = look !== 'primer'
@@ -64,15 +65,15 @@ function finishOf(f: Finish, look: Look, color: string, wl: number): { color: st
 type Chunk = 'bridge' | 'house' | 'stbd' | 'port' | 'prop'
 type ChunkInfo = { name: string; desc: string; color: string; off: [number, number, number] }
 const SPLIT: Record<string, Partial<Record<Chunk, ChunkInfo>>> = {
-  'B-04': {
+  'B-01': {
     bridge: { name: '조타실', desc: '거주구 맨 위, 배를 조종하는 곳이에요. 양옆으로 튀어나온 브리지 윙까지 한 덩어리로 따로 만들어 올려요.', color: '#d4a017', off: [0, 10, 0] },
     house: { name: '거주구', desc: '선원 숙소·사무실 4층과 연돌이에요. 따로 지어서 갑판 위에 통째로 올려요.', color: '#2f9e6b', off: [0, 5, 0] },
-    stbd: { name: '선체 우현', desc: '중심선에서 우현까지 선체 절반이에요. 외판·이중저·늑골·갑판이 함께 붙어 있고, 방수 2차 구역과 케이블 트레이가 이쪽에 있어요.', color: '#e0662f', off: [0, 0, 8] },
+    stbd: { name: '선체 우현', desc: '중심선에서 우현까지 선체 절반이에요. 외판·이중저·늑골·갑판이 함께 붙어 있고, 러그 부착 자리와 그 아래 보강재가 이쪽에 있어요.', color: '#e0662f', off: [0, 0, 8] },
     port: { name: '선체 좌현', desc: '중심선에서 좌현까지 선체 절반이에요. 우현과 같은 구조로, 도크에서 중심선을 맞춰 붙여요.', color: '#2f8cff', off: [0, 0, -8] },
     prop: { name: '추진·조타', desc: '선미 아래 스케그와 선미관, 프로펠러, 타예요. 블록 탑재 뒤 축계·타 정렬을 따로 맞춰요.', color: '#8b5cf6', off: [-7, -1.5, 0] },
   },
 }
-const SPOT_CHUNK: Record<string, Chunk> = { coat: 'stbd', tray: 'stbd' }
+const SPOT_CHUNK: Record<string, Chunk> = { lug: 'stbd', reinforce: 'stbd' }
 // 부재 자리 → 작은 블록. 나누지 않는 블록은 전부 한 덩어리(stbd)
 const chunkOf = (split: boolean, p: Part, side: Chunk): Chunk => (!split ? 'stbd' : p === 'extra' ? 'prop' : p === 'house' || p === 'bridge' ? p : side)
 
@@ -81,28 +82,35 @@ const DOCK_LOOK = new THREE.Vector3(0.72, 0.5, 0.48).normalize().multiplyScalar(
 // 나눴을 때는 선수 쪽 정면에 가깝게 — 좌현·우현이 화면 좌우로, 거주구·조타실이 위로 벌어져 보인다
 const EXPLODE_LOOK = new THREE.Vector3(0.82, 0.42, 0.38).normalize()
 
-// 선미(B-04) 위치는 휘어진 외판을 따라 잡는다
+// 방수 구역·트레이 위치는 B-04 외판을 따라 잡는다
 const H4 = HULLS['B-04']
+// 러그는 거주구(x -6.5~3.5) 앞 갑판, 늑골 5.5 와 7 사이
+const LUG_X = 6.25, DECK_Y = HULLS['B-01'].sec(LUG_X).h
 const COAT_Z = sideZ(H4, -2, 5.5) + 0.25, TRAY_Y = 6, TRAY_Z = Math.min(...[-5, -2, 1].map((x) => sideZ(H4, x, TRAY_Y))) - 1
 
 // at = 블록 좌표(뒤집기 전), view = 그 자리를 볼 카메라 위치(화면 좌표 기준 차이)
 const PLANS: Record<string, Plan> = {
   'B-01': {
-    name: '중앙 블록', flip: true, note: '실제처럼 뒤집어 놓은 상태 · 외판이 위',
+    name: '선미 블록', flip: false, note: '도크 탑재 상태 · 선미 선형과 거주구·프로펠러·타',
     spots: [
-      { key: 'lug', title: '러그 부착 위치', desc: '늑골(프레임) 사이 외판에 러그가 잡혀 있어요. 아래 보강 없이 인양 하중을 받기 어려운 자리예요.', at: [3, -0.7, 5.35], view: [7, 8, 6], keys: ['러그', '럭', '부착 위치', '부착위치'], inside: false },
-      { key: 'reinforce', title: '러그 아래 보강재', desc: '러그 바로 아래, 프레임 사이 이중저 안쪽에 보강재(스티프너·브래킷)가 들어가야 하는 자리예요.', at: [3, 0.5, 5.35], view: [8, -2.5, 9], keys: ['보강', '브래킷', '스티프너', '재작업', '누락'], inside: true },
+      { key: 'lug', title: '러그 부착 위치', desc: '거주구 앞 갑판, 늑골(프레임) 사이에 러그가 잡혀 있어요. 아래 보강 없이 인양 하중을 받기 어려운 자리예요.', at: [LUG_X, DECK_Y + 0.7, 5.35], view: [7, 7, 7], keys: ['러그', '럭', '부착 위치', '부착위치'], inside: false },
+      { key: 'reinforce', title: '러그 아래 보강재', desc: '러그 바로 아래, 갑판 밑 프레임 사이에 보강재(스티프너·브래킷)가 들어가야 하는 자리예요.', at: [LUG_X, DECK_Y - 0.5, 5.35], view: [8, -2, 8], keys: ['보강', '브래킷', '스티프너', '재작업', '누락'], inside: true },
     ],
   },
   'B-04': {
-    name: '선미 블록', flip: false, note: '도크 탑재 상태 · 선미 선형과 프로펠러·타',
+    name: '중앙 블록', flip: true, note: '실제처럼 뒤집어 놓은 상태 · 외판이 위',
     spots: [
       { key: 'coat', title: '측면 외판 방수 2차 구역', desc: '측면 외판 바깥쪽 2차 방수 도포 구역이에요. 같은 구역 안쪽에서 다른 작업이 겹치면 도포를 못 해요.', at: [-2, 5.5, COAT_Z], view: [6, 3, -15], keys: ['방수', '도포', '도막', '외판'], inside: false },
       { key: 'tray', title: '케이블 트레이 브래킷', desc: '측면 외판 안쪽에 전기팀 케이블 트레이 브래킷 용접이 잡힌 자리예요. 바깥 방수 구역과 정확히 겹쳐요.', at: [-2, TRAY_Y + 0.3, TRAY_Z + 0.3], view: [7, 1.5, 9], keys: ['전기', '케이블', '트레이'], inside: true },
     ],
   },
   'B-03': { name: '기관부 블록', flip: false, note: '공정 완료 · 주기관 받침대와 기관실', spots: [] },
-  'B-02': { name: '선수 블록', flip: false, note: '운송 중 · 앞으로 좁아지는 선수 선형', spots: [] },
+  'B-02': {
+    name: '선수 블록', flip: false, note: '운송 중 · 트랜스포터에 실려 도크 진입로 앞',
+    spots: [
+      { key: 'route', title: '트랜스포터 적재 위치', desc: '블록 바닥을 받치고 있는 트랜스포터 자리예요. 도크 진입로에서 회전 반경이 안 나와 이 상태로 서 있어요.', at: [-2.5, -0.6, 2], view: [6, 2, 13], keys: ['운송', '트랜스포터', '진입로', '탑재'], inside: false },
+    ],
+  },
 }
 
 export function BlockInspect({ block, requests, onClose, onRequests }: { block: string; requests: InspectRequest[]; onClose: () => void; onRequests?: () => void }) {
@@ -204,7 +212,7 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
       }
       return c
     }
-    // 부재 마감별 재질 — 블록 공정 단계에 따라 프라이머(적갈색) / 선저만 도장(B-04 방수 중) / 전체 도장(B-03 완료)
+    // 부재 마감별 재질 — 블록 공정 단계에 따라 프라이머(적갈색) / 선저만 도장(B-01 선미) / 전체 도장(B-03 완료)
     const finishLook = LOOK[block] ?? 'primer'
     const mat = (color: string, finish: Finish = 'structure') => {
       const f = finishOf(finish, finishLook, color, hullWL[block] ?? 3)
@@ -255,9 +263,8 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
       s.moveTo(-0.7, 0); s.lineTo(0.7, 0); s.lineTo(0.55, 0.75); s.absarc(0, 0.75, 0.55, 0, Math.PI, false); s.closePath()
       const hole = new THREE.Path(); hole.absarc(0, 0.8, 0.22, 0, Math.PI * 2, false); s.holes.push(hole)
       const mesh = add(new THREE.ExtrudeGeometry(s, { depth: 0.14, bevelEnabled: false, curveSegments: 16 }), m, parent, e)
-      mesh.rotation.x = Math.PI // 외판 바깥(-y)으로
-      mesh.position.set(x, -0.2, z - 0.07)
-      slab(x - 0.85, x + 0.85, -0.22, -0.14, z - 0.5, z + 0.5, m, parent, e) // 받침 패드
+      mesh.position.set(x, DECK_Y + 0.08, z - 0.07) // 갑판 위로 세운다
+      slab(x - 0.85, x + 0.85, DECK_Y, DECK_Y + 0.08, z - 0.5, z + 0.5, m, parent, e) // 받침 패드
     }
     for (const sp of plan.spots) {
       const on = actSet.has(sp.key)
@@ -269,13 +276,18 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
       const grp = new THREE.Group()
       home.add(grp)
       if (sp.key === 'lug') {
-        lug(grp, 3, 5.35, pm, dash)
+        lug(grp, LUG_X, 5.35, pm, dash)
         // 다른 러그 예정 위치(파랑) — 늑골·종통재가 만나는 자리
         const okM = new THREE.MeshStandardMaterial({ color: '#7fb2e8', transparent: true, opacity: 0.55, roughness: 0.6 })
-        for (const [x, z] of [[-4.5, 1.6], [-4.5, 6.6], [4.5, 1.6]] as const) lug(home, x, z, okM)
+        for (const [x, z] of [[4.75, 1.6], [7.75, 1.6], [7.75, 6.6]] as const) lug(home, x, z, okM)
       } else if (sp.key === 'reinforce') {
-        slab(2.95, 3.05, 0, 0.95, 4.2, 6.5, pm, grp, dash) // 프레임 사이 부분 플로어(보강재)
-        for (const sz of [4.25, 6.45]) { const b = new THREE.Shape(); b.moveTo(0, 0); b.lineTo(0.7, 0); b.lineTo(0, 0.7); b.closePath(); const m = add(new THREE.ExtrudeGeometry(b, { depth: 0.1, bevelEnabled: false }), pm, grp, dash); m.rotation.y = sz < 5 ? 0 : Math.PI; m.position.set(sz < 5 ? 3.05 : 2.95, 0, sz) }
+        slab(LUG_X - 0.05, LUG_X + 0.05, DECK_Y - 0.95, DECK_Y, 4.2, 6.5, pm, grp, dash) // 프레임 사이 갑판 밑 보강재(웨브)
+        slab(LUG_X - 0.3, LUG_X + 0.3, DECK_Y - 1.01, DECK_Y - 0.95, 4.2, 6.5, pm, grp, dash) // 면재
+        for (const sz of [4.25, 6.45]) slab(LUG_X - 0.05, LUG_X + 0.05, DECK_Y - 0.95, DECK_Y, sz - 0.05, sz + 0.05, pm, grp, dash)
+      } else if (sp.key === 'route') {
+        // 블록 바닥 아래 트랜스포터 적재 데크와 바퀴 줄
+        slab(-8, 3, -1.1, -0.15, 0, 3.4, pm, grp, dash)
+        for (let x = -7.2; x <= 2.4; x += 1.6) slab(x - 0.35, x + 0.35, -1.6, -1.1, 2.4, 3.2, pm, grp, dash)
       } else if (sp.key === 'coat') {
         // 휘어진 외판 바깥에 딱 붙는 도포 구역
         pm.opacity = 0.45
@@ -293,9 +305,9 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
       marks.push({ key: sp.key, mats: [pm], lines: [dash], ball, at: new THREE.Vector3(...sp.at), home, grp, p: homeP })
     }
 
-    // 뒤집힌 블록(B-01)은 받침 위에 외판이 위로
+    // 뒤집힌 블록(B-04)은 받침 위에 외판이 위로
     // 블록은 중심선에서 한쪽 현측까지 절반만 그린다. 도크 쪽(우현 위)에서 보면 잘린 중심선 면으로 속이 보이도록
-    // 뒤집은 B-01 은 회전으로, 나머지는 z 를 거울처럼 뒤집어 절반을 반대쪽에 둔다
+    // 뒤집은 B-04 는 회전으로, 나머지는 z 를 거울처럼 뒤집어 절반을 반대쪽에 둔다
     if (!plan.flip) g.scale.z = -1
     if (plan.flip) {
       g.rotation.x = Math.PI
@@ -397,7 +409,7 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
         const e = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2
         camera.position.lerpVectors(fly.fp, fly.tp, e)
         controls.target.lerpVectors(fly.ft, fly.tt, e)
-        if (k >= 1) { fly = null; if (first) { first = false; const f = focusKey.current; if (f) goSpot(f, quick ? 0.01 : 1.5) } else quick = false }
+        if (k >= 1) { fly = null; if (first) { first = false; if (split) autoSplit.current(); else { const f = focusKey.current; if (f) goSpot(f, quick ? 0.01 : 1.5) } } else quick = false }
         dirty = true
       }
       if (controls.update()) dirty = true
@@ -493,6 +505,9 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
   useEffect(() => { api.current.xray(xray) }, [xray, block, activeKeys])
   // 블록을 다시 그리면 분해도 처음(붙은 상태)부터
   useEffect(() => { setExplode(false); setPart(null) }, [block, activeKeys])
+  // 나누는 블록은 줌인이 끝나면 바로 나눠 보여 준다
+  const autoSplit = useRef(() => {})
+  autoSplit.current = () => { if (!explode) toggleExplode() }
   const toggleExplode = () => {
     const on = !explode
     setExplode(on)
@@ -536,7 +551,6 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
       <div className="bi-tools">
         <button aria-pressed={tags} onClick={() => setTags((v) => !v)} title="부재 이름표 켜기·끄기 (T)"><Icon name="tags" />부재 이름<kbd>T</kbd></button>
         <button aria-pressed={xray} onClick={() => setXray((v) => !v)} title="구조를 흐리게 해서 안쪽 보기 (X)"><Icon name="xray" />투시<kbd>X</kbd></button>
-        {split && <button aria-pressed={explode} onClick={toggleExplode} title="안쪽 작은 블록(거주구·조타실·좌현·우현·추진부)으로 크게 나눠 보기 (E)"><Icon name="explode" />블록 나누기<kbd>E</kbd></button>}
       </div>
       {part && split?.[part] ? (
         <div className="bi-card is-part" style={{ '--pc': split[part]!.color } as CSSProperties}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getState, setDrawingsLocal, useUtterances, type Drawing } from '../utterances'
+import { getState, openRequests, setDrawingsLocal, useUtterances, type Drawing } from '../utterances'
 
 // 도면 변경 배포(설계자) ↔ 현장 전달(현장 담당자). 읽기는 관제 공통 상태(/api/state), 쓰기는 /sync/drawings
 const stamp = () => new Date().toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
@@ -71,15 +71,25 @@ export function DrawingForm({ blocks, by, initial }: { blocks: { id: string; par
   )
 }
 
+// 현장 보고에서 '작업 지시'를 누르면 그 블록·미리 써 둔 문안을 들고 작업 지시 화면으로 온다. 보내면 그 확인 요청은 확인 처리
+export type OrderDraft = { block: string | null; text: string; from: string; ack: () => void }
+
 // 현장 담당자 — 현장 작업자에게 새 작업 지시를 보내고, 배포된 도면을 작업자에게 넘긴다
-export function DrawingRelay({ by, blocks }: { by: string; blocks: { id: string; part: string }[] }) {
-  const all = useDrawings()
-  const [block, setBlock] = useState(blocks[0]?.id ?? '')
-  const [text, setText] = useState('')
+export function DrawingRelay({ by, blocks, draft }: { by: string; draft?: OrderDraft | null; blocks: { id: string; part: string; status?: string; tone?: string; location?: string }[] }) {
+  const s = useUtterances()
+  const all = s.drawings
+  const open = openRequests(s, 'lead')
+  const sorted = [...blocks].sort((a, b) => a.id.localeCompare(b.id))
+  const [block, setBlock] = useState(draft?.block && sorted.some((b) => b.id === draft.block) ? draft.block : sorted[0]?.id ?? '')
+  const [text, setText] = useState(draft?.text ?? '')
+  const [from, setFrom] = useState(draft ?? null)
   const [sent, setSent] = useState('')
   const send = () => {
     if (!block || !text.trim()) return
-    sendOrder({ block, note: text.trim(), by, from: 'direct' })
+    const req = from && from.block === block ? from : null
+    sendOrder({ block, note: text.trim(), by, from: req ? req.from : 'direct' })
+    req?.ack()
+    setFrom(null)
     setText('')
     setSent(`${block} 작업 지시를 현장에 보냈어요. 작업자 화면에 바로 떠요.`)
   }
@@ -87,12 +97,38 @@ export function DrawingRelay({ by, blocks }: { by: string; blocks: { id: string;
   const undo = (d: Drawing) => { const n: Drawing = { ...d, relayBy: undefined, relayAt: undefined, relayVia: undefined, relayQuote: undefined }; set(all.map((x) => (x.id === d.id ? n : x))); void patch(n) }
   return (
     <section className="cn-card dp-hist dp-dw" aria-label="지시·변경">
-      <div className="dp-order">
-        <label className="cn-field">블록<select value={block} onChange={(e) => setBlock(e.target.value)}>{blocks.map((b) => <option key={b.id} value={b.id}>{b.id} · {b.part}</option>)}</select></label>
-        <label className="cn-field">현장에 보낼 작업 지시<textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="무엇을 어떻게 하라고 할지 적어 주세요" /></label>
-        <div className="dp-order-foot"><span>{sent}</span><button className="cn-btn cn-btn-primary" disabled={!block || !text.trim()} onClick={send}>작업 지시 보내기</button></div>
+      <div className="dp-ord">
+        <p className="dp-ord-step"><i>1</i>블록 고르기</p>
+        <div className="dp-ord-blocks" role="radiogroup" aria-label="블록">
+          {sorted.map((b) => {
+            const n = open.filter((c) => c.block === b.id).length
+            return (
+              <button key={b.id} role="radio" aria-checked={block === b.id} className={`dp-ord-block${block === b.id ? ' is-on' : ''}`} onClick={() => { setBlock(b.id); setSent('') }}>
+                <span className="dp-ord-id">{b.id}</span>
+                <span className="dp-ord-part">{b.part}</span>
+                {b.status && <span className={`dp-ord-st tone-${b.tone ?? 'blue'}`}>{b.status}</span>}
+                {n > 0 && <span className="dp-ord-alert">확인 요청 {n}</span>}
+              </button>
+            )
+          })}
+        </div>
+        <p className="dp-ord-step"><i>2</i>{block} 현장에 보낼 작업 지시</p>
+        <div className="dp-ord-box">
+          <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="무엇을, 언제까지, 어떻게 하라고 할지 적어 주세요&#10;예) 1구역 용접 끝난 뒤 방수 2차 도포 시작" />
+          <div className="dp-ord-foot">
+            <span className={sent ? 'is-sent' : ''}>{sent || '보내면 작업자 앱의 받은 지시에 바로 떠요'}</span>
+            <button className="cn-btn cn-btn-primary" disabled={!block || !text.trim()} onClick={send}>작업 지시 보내기</button>
+          </div>
+        </div>
       </div>
-      {all.length === 0 && <p className="dp-utt-empty">아직 받은 도면 변경이나 보낸 작업 지시가 없어요.</p>}
+      <h3 className="dp-ord-head">보낸 지시 · 받은 도면 <em>{all.length}</em></h3>
+      {all.length === 0 && (
+        <div className="dp-ord-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z M8 9h8 M8 12.5h5" /></svg>
+          <b>아직 보낸 작업 지시가 없어요</b>
+          <span>위에서 블록을 고르고 지시를 보내면 여기에 쌓이고, 작업자가 확인하면 표시돼요.</span>
+        </div>
+      )}
       {all.map((d) => (
         <article key={d.id} className={`dp-rq3${d.relayAt ? ' is-done' : ''}`}>
           <div className="dp-rq3-main">

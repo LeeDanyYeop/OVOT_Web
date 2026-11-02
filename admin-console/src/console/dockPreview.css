@@ -506,3 +506,101 @@
 .dp-root .tt-steps li:not(.is-done):not(.is-now) b{color:#86868b}
 .dp-root .tt-steps small{display:block;font-size:10.5px;line-height:1.3;color:#86868b}
 .dp-root .tt-note{margin:0;padding:4px 16px 12px;font-size:11px;color:#a1a1a6}
+
+/* 작업 지시 — 블록 타일 고르기 + 지시 작성 */
+.dp-root .dp-ord{display:flex;flex-direction:column;gap:12px}
+.dp-root .dp-ord-step{display:flex;align-items:center;gap:10px;margin:6px 0 0;font-size:15px;font-weight:700;color:#1d1d1f}
+.dp-root .dp-ord-step i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#1d1d1f;color:#fff;font-style:normal;font-size:12px;font-weight:700}
+.dp-root .dp-ord-blocks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dp-root .dp-ord-block{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px 18px;border:0;border-radius:16px;background:#f5f5f7;box-shadow:inset 0 0 0 1.5px transparent;font:inherit;text-align:left;cursor:pointer;transition:box-shadow .15s,background .15s,transform .15s}
+.dp-root .dp-ord-block:hover{background:#ececf0}
+.dp-root .dp-ord-block.is-on{background:#fff;box-shadow:inset 0 0 0 2px #0071e3,0 8px 22px rgba(0,113,227,.14);transform:translateY(-1px)}
+.dp-root .dp-ord-id{font-family:'Rajdhani',system-ui,sans-serif;font-weight:700;font-size:26px;line-height:1;letter-spacing:.04em;color:#1d1d1f}
+.dp-root .dp-ord-block.is-on .dp-ord-id{color:#0071e3}
+.dp-root .dp-ord-part{font-size:14px;font-weight:600;color:#424245}
+.dp-root .dp-ord-st{margin-top:6px;padding:3px 9px;border-radius:980px;font-size:12px;font-weight:600;background:rgba(0,113,227,.1);color:#0071e3}
+.dp-root .dp-ord-st.tone-teal{background:rgba(0,150,136,.12);color:#00796b}
+.dp-root .dp-ord-st.tone-green{background:rgba(52,199,89,.14);color:#1d7a45}
+.dp-root .dp-ord-alert{position:absolute;top:12px;right:12px;padding:3px 8px;border-radius:980px;background:#ff3b30;color:#fff;font-size:11px;font-weight:700}
+.dp-root .dp-ord-box{border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1.5px #e5e5ea;overflow:hidden;transition:box-shadow .15s}
+.dp-root .dp-ord-box:focus-within{box-shadow:inset 0 0 0 2px #0071e3,0 0 0 4px rgba(0,113,227,.1)}
+.dp-root .dp-ord-box textarea{display:block;width:100%;min-height:120px;border:0;outline:0;resize:vertical;padding:18px 20px;font:inherit;font-size:16px;line-height:1.55;color:#1d1d1f;background:transparent}
+.dp-root .dp-ord-box textarea::placeholder{color:#a1a1a6}
+.dp-root .dp-ord-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 14px 12px 20px;background:#fafafc;border-top:1px solid #f0f0f3;font-size:13px;color:#86868b}
+.dp-root .dp-ord-foot .is-sent{color:#1d7a45;font-weight:600}
+.dp-root .dp-ord-foot .cn-btn-primary{border-radius:980px;min-height:44px;padding:0 24px;font-size:15px;background:#0071e3}
+.dp-root .dp-ord-foot .cn-btn-primary:hover:not(:disabled){background:#0062c4}
+.dp-root .dp-ord-foot .cn-btn-primary:disabled{background:#c7c7cc}
+.dp-root .dp-ord-head{display:flex;align-items:center;gap:8px;margin:30px 0 4px;font-size:17px;font-weight:700;color:#1d1d1f}
+.dp-root .dp-ord-head em{font-style:normal;padding:1px 9px;border-radius:980px;background:#f0f0f3;font-size:13px;color:#6e6e73}
+.dp-root .dp-ord-empty{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:10px;padding:34px 20px;border-radius:18px;border:1.5px dashed #e0e0e5;text-align:center;color:#86868b;font-size:14px}
+.dp-root .dp-ord-empty svg{width:34px;height:34px;color:#c7c7cc;margin-bottom:4px}
+.dp-root .dp-ord-empty b{font-size:16px;color:#424245}
+@media(max-width:800px){.dp-root .dp-ord-blocks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* ── 모바일(폰) — 관제를 폰으로 열었을 때: 머리·카드 여백을 줄이고 3D 위 겹침 요소를 작게 ── */
+@media(max-width:650px){
+  .dp-root .cn-side{position:sticky;top:0;z-index:20;padding:10px 12px 8px;gap:6px}
+  .dp-root .cn-nav{gap:4px;scrollbar-width:none}
+  .dp-root .cn-nav::-webkit-scrollbar{display:none}
+  .dp-root .cn-nav button{flex:none;padding:8px 13px;font-size:14px}
+  .dp-root .dp-title{padding:22px 14px 30px}
+  .dp-root .dp-title h1{font-size:25px;margin:2px 0 0}
+  .dp-root .dp-title p{font-size:12px}
+  .dp-root .dp-alertline{margin:14px 0;padding:13px 15px;border-radius:16px;font-size:14px}
+  .dp-root .dp-dock,.dp-root .dp-detail,.dp-root .dp-hist{padding:16px 14px;border-radius:20px}
+  .dp-root .cn-card h2{font-size:21px}
+  .dp-root .dp-layout{gap:14px}
+  .dp-root .dp-twin.dp-twin{height:440px;margin:0 -4px;border-radius:14px}
+  /* 블록 진행 판: 작게 접어서 왼쪽 위에 */
+  .dp-root .tw-panel{left:8px;top:8px;min-width:0;width:132px;padding:7px 8px 4px;border-radius:10px}
+  .dp-root .tw-panel p{font-size:11px;margin-bottom:4px}
+  .dp-root .tw-panel button{grid-template-columns:34px 1fr 30px;gap:5px;padding:3px 2px;font-size:11px}
+  .dp-root .tw-panel button span{height:5px}
+  .dp-root .tw-docks{left:8px;bottom:8px;padding:4px}
+  .dp-root .tw-docks button{padding:5px 8px;font-size:12px}
+  /* 블록 내부 3D: 위 = 돌아가기 + 아이콘 도구, 아래 = 한 줄로 밀어 보는 위치 버튼, 설명 카드는 그 위 */
+  .dp-root .bi-head{left:8px;top:8px;max-width:calc(100% - 112px);padding:4px 10px 4px 4px;gap:6px}
+  .dp-root .bi-head b{font-size:12.5px}
+  .dp-root .bi-back{padding:6px 8px;font-size:12px}
+  .dp-root .bi-tools{top:8px;right:8px;gap:4px}
+  .dp-root .bi-tools button{width:36px;height:36px;padding:0;justify-content:center;font-size:0;gap:0}
+  .dp-root .bi-tools button .bi-ico{width:18px;height:18px}
+  .dp-root .bi-spots{left:8px;right:8px;bottom:8px;max-width:none;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .dp-root .bi-spots::-webkit-scrollbar{display:none}
+  .dp-root .bi-spots button{flex:none;padding:6px 9px;grid-template-columns:auto auto}
+  .dp-root .bi-spots button .tn{font-size:12px;white-space:nowrap}
+  .dp-root .bi-spots button .bi-ico{width:18px;height:18px}
+  .dp-root .bi-card{left:8px;right:8px;top:auto;bottom:58px;width:auto;padding:10px 12px}
+  .dp-root .bi-card h3{font-size:14px;margin:2px 0 4px}
+  .dp-root .bi-card p{font-size:12px}
+  .dp-root .bi-card .bi-card-text{display:none}
+  .dp-root .bi-card .bi-card-req{font-size:12px;margin-bottom:4px}
+  .dp-root .bi-card .bi-card-kind{font-size:10px}
+  .dp-root .bi-card .bi-card-sub{display:none}
+  .dp-root .bi-tag{font-size:12px;-webkit-text-stroke-width:2.5px}
+  .dp-root .bi-tag.k-w{font-size:10px;padding:2px 5px 1px}
+  /* 작업 지시 */
+  .dp-root .dp-ord-blocks{gap:8px}
+  .dp-root .dp-ord-block{padding:12px 13px;border-radius:14px}
+  .dp-root .dp-ord-id{font-size:22px}
+  .dp-root .dp-ord-part{font-size:13px}
+  .dp-root .dp-ord-alert{top:8px;right:8px;font-size:10px;padding:2px 6px}
+  .dp-root .dp-ord-box textarea{min-height:140px;padding:14px 15px;font-size:15px}
+  .dp-root .dp-ord-foot{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
+  .dp-root .dp-ord-foot .cn-btn-primary{width:100%}
+  /* 현장 보고 카드 */
+  .dp-root .dp-rq3{padding:16px;border-radius:16px}
+  .dp-root .dp-rq3-actions{flex-wrap:wrap;gap:6px 14px}
+}
+/* 좁은 화면: 맨 위 한 줄에 로고 · 시연 초기화 · 이름+로그아웃, 그 아래 메뉴 */
+@media(max-width:950px){
+  .dp-root .cn-side{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;column-gap:8px}
+  .dp-root .cn-side>.cn-brand{grid-column:1;grid-row:1}
+  .dp-root .cn-side>.cn-side-foot{display:flex;grid-column:3;grid-row:1;margin:0;padding:0}
+  .dp-root .cn-side>.cn-user{display:flex;flex-direction:row;align-items:center;gap:8px;grid-column:4;grid-row:1;padding:0;background:none;border-radius:0}
+  .dp-root .cn-side>.cn-nav{grid-column:1/-1;grid-row:2}
+  .dp-root .cn-side-foot .cn-sync,.dp-root .cn-user .cn-badge,.dp-root .cn-user small,.dp-root .cn-user .dp-small{display:none}
+  .dp-root .cn-user strong{font-size:13px;white-space:nowrap}
+  .dp-root .cn-user .dp-logout,.dp-root .cn-side-foot .dp-reset{margin:0;min-height:30px;padding:0 11px;font-size:12px;white-space:nowrap;border-radius:980px}
+}
+@media(max-width:650px){.dp-root .cn-brand span{display:none}}

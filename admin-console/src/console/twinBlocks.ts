@@ -41,13 +41,13 @@ export const stageText: Record<Stage, string> = {
 export const blocks: BlockInfo[] = [
   {
     id: 'B-04',
-    name: '선미',
-    stage: 'working',
+    name: '중앙',
+    stage: 'ground',
     stageLabel: '방수 작업 중',
     step: 3,
     progress: 62,
-    location: '도크 탑재 완료 · 선미 쪽',
-    summary: '용접 끝나고 방수·도장 진행 중. 선미 끝에서부터 앞쪽으로 진행 중이에요.',
+    location: '도크 옆 지상 · 뒤집어 놓은 상태',
+    summary: '용접 끝나고 방수·도장 진행 중. 탑재 전에 뒤집어 놓은 채로 외판 방수를 하고 있어요.',
     teams: [
       { name: '방수팀', state: '작업 중', tasks: [
         { text: '하부 외판 방수 1차 도포', state: '완료' },
@@ -59,7 +59,7 @@ export const blocks: BlockInfo[] = [
         { text: '용접부 비파괴 검사', state: '완료' },
       ] },
       { name: '배관팀', state: '대기', tasks: [
-        { text: '선미 배관 관통부 설치', state: '예정' },
+        { text: '배관 관통부 설치', state: '예정' },
       ] },
     ],
     log: [
@@ -103,22 +103,22 @@ export const blocks: BlockInfo[] = [
   {
     id: 'B-01',
     step: 2,
-    name: '중앙',
-    stage: 'ground',
+    name: '선미',
+    stage: 'working',
     stageLabel: '러그 부착 준비',
     progress: 10,
-    location: '도크 옆 지상 · 뒤집어 놓은 상태',
-    summary: '탑재 전에 뒤집어 놓고 아래쪽 러그 부착과 보강을 준비하고 있어요.',
+    location: '도크 탑재 완료 · 선미 쪽',
+    summary: '거주구 앞 갑판에 러그 부착과 그 아래 보강을 준비하고 있어요.',
     teams: [
       { name: '용접팀', state: '대기', tasks: [
-        { text: '블록 반전 후 하부 정렬', state: '완료' },
+        { text: '탑재 위치 정렬', state: '완료' },
         { text: '러그 부착·용접', state: '예정' },
         { text: '보강 작업', state: '예정' },
         { text: '용접부 검사', state: '예정' },
       ] },
     ],
     log: [
-      { time: '08:30', text: '블록 반전 완료', by: '크레인 신호수' },
+      { time: '08:30', text: '도크 탑재 완료', by: '크레인 신호수' },
     ],
   },
   {
@@ -133,7 +133,7 @@ export const blocks: BlockInfo[] = [
     teams: [
       { name: '용접팀', state: '대기', tasks: [
         { text: '도착 후 탑재 위치 맞춤', state: '예정' },
-        { text: 'B-01 접합부 용접', state: '예정' },
+        { text: 'B-04 접합부 용접', state: '예정' },
       ] },
       { name: '방수팀', state: '대기', tasks: [
         { text: '선수 외판 방수 도포', state: '예정' },

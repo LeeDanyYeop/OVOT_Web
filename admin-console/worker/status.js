@@ -6,10 +6,10 @@ import { blocks, PROCESS } from '../src/console/twinBlocks.ts'
 
 // 블록 기준 정보 (관제 twinBlocks 와 같은 내용) — AI 가 DB 상태와 발화가 다르면 '상태 불일치'로 표시하는 기준
 export const BLOCK_INFO = {
-  'B-01': { name: '중앙 블록', process: '용접', team: '용접팀', state: '도크 옆 지상에 뒤집어 둔 상태 · 러그 부착·보강 준비 중 (러그 부착 전)' },
+  'B-01': { name: '선미 블록', process: '용접', team: '용접팀', state: '도크에 탑재된 상태 · 거주구 앞 갑판 러그 부착·보강 준비 중 (러그 부착 전)' },
   'B-02': { name: '선수 블록', process: '입고', team: '운송팀', state: '협력사 공장(울산 온산)에서 도크로 운송 중' },
   'B-03': { name: '기관부 블록', process: '완성', team: '품질팀', state: '탑재·전 공정 완료' },
-  'B-04': { name: '선미 블록', process: '방수', team: '방수팀', state: '측면 외판 방수 2차 도포 진행 중 (하부 1차 완료)' },
+  'B-04': { name: '중앙 블록', process: '방수', team: '방수팀', state: '도크 옆 지상에 뒤집어 둔 상태 · 측면 외판 방수 2차 도포 진행 중 (하부 1차 완료)' },
 }
 
 // 지금 공정 담당 팀의 기준 업무 목록 (관제 twinBlocks 의 고정 예시) — 첫 갱신 전과 AI 가 고칠 출발점

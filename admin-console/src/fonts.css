@@ -3,3 +3,5 @@
 @font-face { font-family: 'Pretendard'; font-weight: 500; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-Medium.woff2') format('woff2'); }
 @font-face { font-family: 'Pretendard'; font-weight: 600; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2') format('woff2'); }
 @font-face { font-family: 'Pretendard'; font-weight: 700; font-style: normal; font-display: swap; src: url('pretendard/dist/web/static/woff2/Pretendard-Bold.woff2') format('woff2'); }
+/* Rajdhani (OFL) — 3D 부재 이름표(Shell·Frame·B·S·L·C)용 각진 기술 도면 느낌 글꼴 */
+@font-face { font-family: 'Rajdhani'; font-weight: 700; font-style: normal; font-display: swap; src: url('@fontsource/rajdhani/files/rajdhani-latin-700-normal.woff2') format('woff2'); }

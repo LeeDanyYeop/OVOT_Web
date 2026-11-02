@@ -2,9 +2,9 @@ import * as THREE from 'three'
 
 // 블록 내부 확대 화면(BlockInspect)에 그리는 블록별 선체 구조.
 // 블록마다 단면 모양(선형)이 길이 방향으로 달라지고, 위치에 맞는 부재가 더 붙는다 — 시연용 예시 형상(실제 도면 아님)
-//   B-01 중앙: 평행부 — 단면이 일정한 이중저·빌지·현측
+//   B-04 중앙: 평행부 — 단면이 일정한 이중저·빌지·현측
 //   B-03 기관부: 깊은 이중저 + 주기관 받침대(엔진 시트)·주기관·배관, 갑판에 기관실 개구부
-//   B-04 선미: 도크 3D 모델처럼 앞쪽 절반은 평행, 뒤쪽 절반이 뾰족하게 좁아짐. 촘촘한 늑골,
+//   B-01 선미: 도크 3D 모델처럼 앞쪽 절반은 평행, 뒤쪽 절반이 뾰족하게 좁아짐. 촘촘한 늑골,
 //              선미 끝 선저가 올라간 자리(카운터) 아래에 스케그·선미관·프로펠러·타
 //   B-02 선수: 앞으로 갈수록 좁아지고 갑판이 올라감(현호), 충돌 격벽, 구상선수(불바스)
 // 좌표: x = 배 길이(+가 선수 쪽), y = 위, z = 중심선(0)에서 현측까지
@@ -44,15 +44,15 @@ const steps = (a: number, b: number, n: number) => Array.from({ length: n + 1 },
 
 const MID: Sec = { yk: 0, wb: 7.4, yb: 0, ws: 10, ys: 2.6, wd: 10, h: 9 }
 export const HULLS: Record<string, Hull> = {
-  'B-01': { L: 18, frames: [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5], db: () => 2.2, sec: () => MID, botLongi: [1.6, 4.1, 6.6], sideLongi: [3.2, 6.6], deckLongi: [2, 4.5, 7] },
+  'B-04': { L: 18, frames: [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5], db: () => 2.2, sec: () => MID, botLongi: [1.6, 4.1, 6.6], sideLongi: [3.2, 6.6], deckLongi: [2, 4.5, 7] },
   'B-03': {
     L: 18, frames: [-7.5, -4.5, -1.5, 1.5, 4.5, 7.5], db: () => 3, botLongi: [1.6, 4.1, 6.6], sideLongi: [4.4, 7], deckLongi: [5.2, 7.6],
     // 선미 쪽(-x)으로 갈수록 빌지가 살짝 커진다
     sec: (x) => { const a = (1 - (x + 9) / 18) ** 2; return { yk: 0, wb: 7.4 - 2.2 * a, yb: 0.3 * a, ws: 10 - 0.6 * a, ys: 2.6 + 0.8 * a, wd: 10, h: 9 } },
   },
-  'B-04': {
+  'B-01': {
     L: 18, frames: steps(-8, 8.5, 11), db: (s) => Math.max(2.2, s.yb + 1), botLongi: [1.6, 4.1, 6.6], sideLongi: [6.8, 8], deckLongi: [2, 4.5, 7],
-    // a: 0 = 블록 가운데부터 앞쪽(평행부), 1 = 선미 끝. 도크 3D 모델(ship-blocks.glb)의 B-04 단면 폭을 재서 맞췄다
+    // a: 0 = 블록 가운데부터 앞쪽(평행부), 1 = 선미 끝. 도크 3D 모델(ship-blocks.glb)의 선미 블록 단면 폭을 재서 맞췄다
     // c: 선미 끝 6m — 선저가 위로 올라가(카운터) 그 아래에 프로펠러와 타가 들어갈 공간을 만든다
     sec: (x) => { const a = Math.max(0, 1 - (x + 9) / 9), c = Math.max(0, 1 - (x + 9) / 6), yk = 4.6 * c ** 1.2, yb = yk + 0.5 * a, wd = 10 - 1.2 * a - 4.8 * a ** 4; return { yk, wb: 0.1 + 7.3 * (1 - a) ** 1.3, yb, ws: Math.min(wd, 0.3 + 9.7 * (1 - a) ** 0.6), ys: Math.min(yb + 2.6 + 1.5 * a, 8.4), wd, h: 9 } },
   },
@@ -62,7 +62,7 @@ export const HULLS: Record<string, Hull> = {
     sec: (x) => { const u = (x + 9) / 18, yk = 1.2 * u ** 2, yb = yk + 1.5 * u, wd = 10 - 8.8 * u ** 1.8; return { yk, wb: Math.max(0.1, 7.4 * (1 - u) ** 1.8), yb, ws: Math.min(wd, Math.max(0.6, 10 - 9.2 * u ** 1.3)), ys: yb + 2.6 + 2.5 * u, wd, h: 9 + 1.4 * u } },
   },
 }
-export const hullOf = (id: string) => HULLS[id] ?? HULLS['B-01']
+export const hullOf = (id: string) => HULLS[id] ?? HULLS['B-04']
 
 /** 단면 윤곽: 중심선 선저 → 평평한 선저 끝 → 빌지 곡선 → 현측 → 갑판 끝. z·y 모두 순서대로 늘어난다 */
 export function outline(s: Sec): [number, number][] {
@@ -302,7 +302,7 @@ export function buildStructure(id: string, k: Kit, opts: { extras?: boolean } = 
     }
     tag('Pipe', 'w', -6, 6.9, 7.6)
   }
-  if (id === 'B-04') {
+  if (id === 'B-01') {
     // 선미 아래 — 스케그(중심선 지느러미 판) 속을 선미관이 지나 프로펠러로 이어지고, 바로 뒤에 선체에 매달린 타
     const PX = -7.95, PY = 2.1 // 프로펠러 중심
     const s = new THREE.Shape()

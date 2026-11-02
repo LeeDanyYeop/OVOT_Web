@@ -11,7 +11,7 @@ import { demoStore } from '../demo/store'
 import { UtteranceLog } from './screens/UtteranceLog'
 import { ReviewQueue } from './screens/ReviewQueue'
 import { SHIPYARDS, loadSite } from './screens/ShipyardMap'
-import { BASE_REV, DrawingForm, DrawingRelay, latestRev, useDrawings } from './screens/Drawings'
+import { BASE_REV, DrawingForm, DrawingRelay, latestRev, useDrawings, type OrderDraft } from './screens/Drawings'
 import { openRequests, refreshStatus, useUtterances, when, type StatusMap } from './utterances'
 import { USERS, type Role } from '../demo/scenarioB03'
 import { LEAD_IDS, LEAD_KEY } from './LoginScreen'
@@ -20,9 +20,9 @@ const leadName = () => { let id = 'W1'; try { id = localStorage.getItem(LEAD_KEY
 
 type Block = { id: string; part: string; status: string; tone: string; location: string; team: string; description: string }
 const blocks: Block[] = [
-  { id:'B-04', part:'선미 블록',status:'작업 중',tone:'teal',location:'도크 탑재 완료 · 선미',team:'방수팀 · 예시',description:'용접은 끝났고 방수 작업이 선미 끝에서부터 진행 중입니다.' },
+  { id:'B-04', part:'중앙 블록',status:'작업 중',tone:'teal',location:'도크 옆 지상 · 반전 상태',team:'방수팀 · 예시',description:'용접은 끝났고 뒤집어 놓은 채로 외판 방수 작업이 진행 중입니다.' },
   { id:'B-03', part:'기관부 블록',status:'완료',tone:'green',location:'도크 탑재 완료 · 기관부',team:'용접·방수·배관·전기팀 · 예시',description:'먼저 탑재한 기준 블록입니다. 용접·방수·배관·전기 작업과 검사가 모두 끝났습니다.' },
-  { id:'B-01', part:'중앙 블록',status:'작업 중',tone:'teal',location:'도크 옆 지상 · 반전 상태',team:'협력사 작업자',description:twin.find(t=>t.id==='B-01')?.summary??'' },
+  { id:'B-01', part:'선미 블록',status:'작업 중',tone:'teal',location:'도크 탑재 완료 · 선미',team:'협력사 작업자',description:twin.find(t=>t.id==='B-01')?.summary??'' },
   { id:'B-02', part:'선수 블록',status:'운송 중',tone:'blue',location:'협력사 공장(울산 온산) → 도크1 · 트랜스포터',team:'운송팀 · 예시',description:'협력사 공장에서 만든 블록을 트랜스포터로 도크까지 옮기는 중입니다. 도착하면 인수 확인 후 탑재합니다.' },
 ]
 
@@ -113,6 +113,7 @@ const MENU_LABEL: Partial<Record<Role, Record<string, string>>> = { lead: { '확
 export function DockPreview({ role }: { role: Role }) {
   const [selected,setSelected] = useState<string | null>(null)
   const [menu,setMenu] = useState('현황')
+  const [orderDraft,setOrderDraft] = useState<OrderDraft | null>(null) // 현장 보고 → 작업 지시로 넘어올 때 그 블록·문안
   const [drawBlock,setDrawBlock] = useState<string | null>(null) // 확인 요청 → 도면 변경으로 넘어올 때 그 블록
   const label = (m:string) => MENU_LABEL[role]?.[m] ?? m
   // 블록을 고르면 카메라가 날아간 뒤 그 블록 내부 확대 화면을 띄운다 (zoomN: 같은 블록을 다시 골라도 다시 띄우기)
@@ -120,6 +121,11 @@ export function DockPreview({ role }: { role: Role }) {
   const [zoomN,setZoomN] = useState(0)
   useEffect(()=>{ setInspect(null); if(!selected) return; const t=window.setTimeout(()=>setInspect(selected),1300); return ()=>clearTimeout(t) },[selected,zoomN])
   useEffect(()=>{document.title='OVOT 관제 · 도크 현황'},[])
+  // 영상 촬영용: Ctrl+Shift+1 → 현장 스트리밍으로 B-01 설계 검토 요청이 들어온 것처럼 (10초 안에 모든 관제 화면에 뜸, 시연 초기화로 사라짐)
+  useEffect(()=>{
+    const onKey=(e:KeyboardEvent)=>{ if(!(e.ctrlKey&&e.shiftKey&&e.code==='Digit1')) return; e.preventDefault(); void fetch('/sync/acks',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({__demoB01:new Date().toISOString()})}).catch(()=>{}) }
+    window.addEventListener('keydown',onKey); return ()=>window.removeEventListener('keydown',onKey)
+  },[])
   const utt = useUtterances()
   const open = openRequests(utt, role)
   const alertIds = [...new Set(open.map(c=>c.block).filter((b):b is string=>!!b&&blocks.some(x=>x.id===b)))]
@@ -145,13 +151,13 @@ export function DockPreview({ role }: { role: Role }) {
   return <div className="cn-root dp-root"><div className="cn-shell">
     <aside className="cn-side" aria-label="메뉴"><div className="cn-brand"><img src={`${import.meta.env.BASE_URL}brand/logo.png`} alt="OVOT"/><span>관리자 관제</span></div>
       <div className="cn-user"><span className="cn-badge info" style={{alignSelf:'flex-start'}}>{USERS[role].roleLabel}</span><strong>{me}</strong><small>{USERS[role].org}</small><span className="dp-small">{dockSel.name} · 작업 현황</span><button className="cn-btn dp-logout" onClick={()=>demoStore.logout()}>로그아웃</button></div>
-      <nav className="cn-nav">{MENUS[role].map(m=><button key={m} aria-current={menu===m?'page':undefined} onClick={()=>setMenu(m)}>{label(m)}{m==='확인 요청'&&open.length>0&&<em>{open.length}</em>}{m==='지시·변경'&&relayPending>0&&<em>{relayPending}</em>}</button>)}</nav>
+      <nav className="cn-nav">{MENUS[role].map(m=><button key={m} aria-current={menu===m?'page':undefined} onClick={()=>{setMenu(m);setOrderDraft(null)}}>{label(m)}{m==='확인 요청'&&open.length>0&&<em>{open.length}</em>}{m==='지시·변경'&&relayPending>0&&<em>{relayPending}</em>}</button>)}</nav>
       <OvotChat/>
       <div className="cn-side-foot"><button className="dp-reset" onClick={()=>void resetDemo().then(()=>{setSelected(null);setMenu('현황')})}>시연 초기화</button><span className="cn-sync local"><i/>현장 스트리밍 연동</span></div>
     </aside>
     <main className="cn-main">
       <div className="dp-body"><header className="dp-title"><div><p className="dp-overline">{yard.name} / {dockSel.name}</p><h1>{menu==='이력'?'현장 대화 기록':menu==='현황'?'오늘의 작업 현황':label(menu)}</h1></div></header>
-      {menu==='이력'?<section className="cn-card dp-hist"><UtteranceLog/></section>:menu==='확인 요청'?<ReviewQueue by={me} role={role} onBlock={pick} onDrawing={(b)=>{setDrawBlock(b);setMenu('도면 변경')}}/>:menu==='도면 변경'?<DrawingForm key={drawBlock??''} blocks={blocks} by={me} initial={drawBlock}/>:menu==='지시·변경'?<DrawingRelay by={me} blocks={blocks}/>:<>
+      {menu==='이력'?<section className="cn-card dp-hist"><UtteranceLog/></section>:menu==='확인 요청'?<ReviewQueue by={me} role={role} onBlock={pick} onDrawing={(b)=>{setDrawBlock(b);setMenu('도면 변경')}} onOrder={(o)=>{setOrderDraft(o);setMenu('지시·변경')}}/>:menu==='도면 변경'?<DrawingForm key={drawBlock??''} blocks={blocks} by={me} initial={drawBlock}/>:menu==='지시·변경'?<DrawingRelay key={orderDraft?.from??''} by={me} blocks={blocks} draft={orderDraft}/>:<>
       {open.length>0?<button className="dp-alertline" onClick={()=>setMenu('확인 요청')}><i/><b>확인할 일 {open.length}건</b><span>{open[0].block?`${open[0].block} · `:''}{open[0].title}</span><em>보기 ›</em></button>:<div className="dp-alertline-gap"/>}
       <div className="dp-layout"><section className="cn-card dp-dock"><div className="dp-cardhead"><div><h2>Digital Twin</h2></div><span className="dp-overall">완료 {doneCount}/{twin.length} 블록 · 평균 공정률 {avg}%</span></div>
         <div className="dp-twin"><TwinScene selected={selected} onSelect={pick} labelOf={id=>blocks.find(b=>b.id===id)?.status} progressOf={progress} dockFocus={dockSel} focus={selected} alerts={alertIds} onAlert={()=>setMenu('확인 요청')}/>

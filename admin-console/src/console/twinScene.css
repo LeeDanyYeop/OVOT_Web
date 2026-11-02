@@ -187,9 +187,10 @@
 .bi-pin { position: absolute; left: 0; top: 0; z-index: 1; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 3px solid #fff; border-radius: 50%; background: #2f8cff; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 3px 10px rgba(0, 0, 0, .25); }
 .bi-pin.is-alert { width: 32px; height: 32px; font-size: 17px; background: #ff3b30; animation: tw-pulse 1.6s ease-in-out infinite; }
 .bi-pin.is-on { outline: 3px solid rgba(255, 59, 48, .35); outline-offset: 3px; }
-.bi-tag { position: absolute; left: 0; top: 0; pointer-events: none; font: 800 15px/1 'Arial Black', Impact, sans-serif; letter-spacing: .02em; -webkit-text-stroke: 3px #fff; paint-order: stroke fill; }
+.bi-tag { position: absolute; left: 0; top: 0; pointer-events: none; font: 700 16px/1 'Rajdhani', 'Pretendard', sans-serif; letter-spacing: .06em; text-transform: uppercase; -webkit-text-stroke: 3.5px rgba(255, 255, 255, .92); paint-order: stroke fill; filter: drop-shadow(0 1px 1.5px rgba(16, 24, 40, .35)); }
 .bi-tag.k-B { color: #e8322b; } .bi-tag.k-S { color: #c026d3; } .bi-tag.k-L { color: #0a9fe0; } .bi-tag.k-C { color: #16b34a; }
-.bi-tag.k-w { color: #c9a227; font-size: 13px; }
+/* 부재 이름(Shell·Frame…) — 도면 이름표처럼 짙은 바탕 위 노란 글씨 */
+.bi-tag.k-w { color: #ffd34d; font-size: 12px; letter-spacing: .14em; padding: 3px 7px 2px; border-radius: 3px; background: rgba(17, 24, 33, .78); border-left: 2px solid #ffd34d; -webkit-text-stroke: 0; filter: none; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
 @media (max-width: 650px) { .bi-card { top: auto; bottom: 56px; } .bi-head span { display: none; } }
 .bi-card { width: min(250px, calc(100% - 28px)); padding: 12px 14px; }
 .bi-card h3 { font-size: 15px; }
@@ -265,3 +266,25 @@
 .bi-part.is-dim { opacity: .45; }
 .bi-card.is-part { border-left-color: var(--pc); }
 .bi-card.is-part .bi-card-kind { color: var(--pc); }
+/* 로그인 — 폰: 지구본을 크게, 겹치던 목록 판은 숨기고 대신 폼의 사업장 목록으로 고른다 */
+.cn-login-yardpick { display: none; }
+@media (max-width: 900px) {
+  .cn-login-yardpick { display: flex; flex-direction: column; gap: 8px; margin: 0 0 18px; font-size: 14px; font-weight: 600; color: #6e6e73; }
+  .cn-login-art.cn-login-3d { min-height: 380px; padding: 20px 18px; }
+  .cn-login-art .gl-panel { display: none; }
+  .cn-login-art.cn-login-3d > h1.cn-login-slogan { font-size: 1.6rem; position: relative; z-index: 2; pointer-events: none; }
+  .cn-login-3d > img { top: 20px; right: 18px; height: 26px; }
+}
+/* 설명창 — 흰 카드 + 왼쪽 색 띠 대신, 위쪽 제목줄(bi-head)과 같은 짙은 유리판. 종류는 작은 꼬리표로 */
+.bi-card, .bi-card.is-alert, .bi-card.is-part { border-left: 0; border: 1px solid rgba(255, 255, 255, .12); border-radius: 14px; background: rgba(10, 22, 44, .86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 14px 36px rgba(2, 8, 22, .38); color: #fff; }
+.bi-card h3 { color: #fff; letter-spacing: -.01em; }
+.bi-card p { color: #c3cedd; }
+.bi-card .bi-card-req { color: #fff; }
+.bi-card .bi-card-sub { color: #8b9ab0; }
+.bi-card .bi-card-kind { align-self: flex-start; width: max-content; margin-bottom: 6px; padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, .1); color: #9fc3ff; font-size: 10.5px; letter-spacing: .02em; }
+.bi-card.is-alert .bi-card-kind { background: #ff3b30; color: #fff; }
+.bi-card.is-part .bi-card-kind { background: rgba(255, 255, 255, .1); color: #fff; }
+.bi-card h3 .bi-ico { color: #7fb2ff; }
+.bi-card.is-alert h3 .bi-ico { color: #ff6b61; }
+.bi-card-link { color: #7fb2ff; }
+.bi-card-link:hover { color: #a9cbff; }

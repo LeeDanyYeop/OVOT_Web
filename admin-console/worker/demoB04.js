@@ -7,6 +7,8 @@ export const WORKER_NAMES = {
   'W-005': '강민철',
   'W-101': '박상우 (방수팀)',
   'W-102': '정우진 (전기팀)',
+  'W-201': '이도현 (운송팀)',
+  'W-202': '최재혁 (크레인 신호수)',
 }
 
 const L = (category, subcategory, evidence, confidence = 0.92, needs_review = false) => ({ category, subcategory, evidence, confidence, needs_review })

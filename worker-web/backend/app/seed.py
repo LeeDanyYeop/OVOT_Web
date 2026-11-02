@@ -26,7 +26,7 @@ WORKERS = [
 
 ZONES = [
     # id, name, description, risk_level, is_work_area, sort_order
-    ("ZONE-A", "B-01 중앙 블록 작업장", "블록 용접 작업장 · 화기/고소 작업", "high", True, 1),
+    ("ZONE-A", "B-01 선미 블록 작업장", "블록 용접 작업장 · 화기/고소 작업", "high", True, 1),
     ("ZONE-B", "B-02 선수 블록 조립장", "블록 조립 · 크레인 인양 구간", "medium", True, 2),
     ("ZONE-C", "C구역 검사장", "용접부 비파괴 검사 · 품질 확인", "low", True, 3),
     ("ZONE-OUT", "작업구역 밖", "작업장 출입구 · 휴게 구역", "low", False, 9),
@@ -34,7 +34,7 @@ ZONES = [
 
 TAGS = [
     # id, tag_code, zone_id, label, is_active
-    ("TAG-A-001", "OVOT-ZONE-A-001", "ZONE-A", "B-01 중앙 블록 작업장 출입구", True),
+    ("TAG-A-001", "OVOT-ZONE-A-001", "ZONE-A", "B-01 선미 블록 작업장 출입구", True),
     ("TAG-B-001", "OVOT-ZONE-B-001", "ZONE-B", "B-02 선수 블록 조립장 출입구", True),
     ("TAG-C-001", "OVOT-ZONE-C-001", "ZONE-C", "C구역 검사장 출입구", True),
     ("TAG-OUT-001", "OVOT-ZONE-OUT-001", "ZONE-OUT", "작업장 정문 게이트", True),
