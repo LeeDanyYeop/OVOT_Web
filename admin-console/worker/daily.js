@@ -30,6 +30,11 @@ export async function makeDaily(env, worker, name, date, { utterances, drawings 
   for (const u of talk) sources[u.voice_id] = { kind: 'voice', time: kstTime(u.recorded_at), block: u.block_id, text: u.transcript }
   for (const d of records) sources[d.id] = { kind: d.kind === 'order' ? 'order' : 'drawing', time: kstTime(Number(d.id)), block: d.block, text: d.kind === 'order' ? d.note : `${d.rev} · ${d.note}` }
   const base = { worker, date, count: talk.length, blocks: [...new Set(talk.map((u) => u.block_id).filter(Boolean))], headline: '', done: [], issues: [], next: [], sources }
+  // 대화는 없어도 그날 받은 지시가 있으면, 지시 하나하나를 체크할 '다음에 할 일'로 보여 준다 (AI 없이 기록 그대로)
+  if (!talk.length && records.length) {
+    const next = records.slice(0, 4).map((d) => ({ text: `${d.block ? `${d.block} ` : ''}${d.kind === 'order' ? '작업 지시' : `도면 ${d.rev}`} — ${d.note}`, evidence: [String(d.id)] }))
+    return { ...base, headline: `오늘 받은 작업 지시 ${records.length}건`, next }
+  }
   if (!talk.length) return { ...base, empty: true }
   if (!env.OPENAI_API_KEY) return { ...base, error: 'AI 요약 키가 설정되지 않았습니다.' }
 
