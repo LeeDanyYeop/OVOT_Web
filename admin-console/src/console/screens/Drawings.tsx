@@ -139,7 +139,7 @@ export function DrawingRelay({ by, blocks, draft }: { by: string; draft?: OrderD
             {d.file && <p className="dp-rq3-detail"><a className="dp-dw-link" href={d.file.url} target="_blank" rel="noreferrer">도면 파일 열기 · {d.file.name}</a></p>}
             {d.relayAt && d.kind !== 'order' && <p className="dp-rq3-ack">✓ {d.relayBy} 현장 전달{d.relayVia === 'voice' ? ' (현장 발화로 확인)' : ''} · {d.relayAt}</p>}
             {d.relayVia === 'voice' && d.relayQuote && <p className="dp-rq3-quote">“{d.relayQuote}”</p>}
-            {!d.relayAt && d.kind !== 'order' && <p className="dp-rq3-meta">현장 전달을 누르거나 현장에서 이 도면을 말로 전달하면 작업자 화면에 바로 떠요</p>}
+            {!d.relayAt && d.kind !== 'order' && <p className="dp-rq3-meta">현장에 전달한 뒤 현장 전달을 누르거나 현장에서 이 도면을 말로 전달하면 설계 담당에게 전달 완료로 기록돼요</p>}
             {d.workerAckAt ? <p className="dp-rq3-ack">✓ 현장 작업자 확인 · {d.workerAckBy} · {d.workerAckAt}</p> : d.relayAt && <p className="dp-rq3-meta">현장 작업자 확인 대기</p>}
           </div>
           <div className="dp-rq3-actions">

@@ -145,12 +145,15 @@ export default {
         return Response.json({ error: true, message: String(e && e.message ? e.message : e) }, { status: 503, headers })
       }
     }
-    // 작업자 앱(Render)이 읽는 받은 지시·도면 변경 목록 (확인은 PATCH /sync/drawings)
+    // 작업자 앱(Render)이 읽는 받은 작업 지시 목록 (확인은 PATCH /sync/drawings).
+    // 도면 변경의 '현장 전달'은 반장이 현장에 전달했다고 위(설계)에 알리는 기록이라 작업자 폰에는 띄우지 않는다 — 작업 지시만 보낸다
     if (url.pathname === '/api/orders') {
       const headers = cors(request.headers.get('Origin'))
       if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers })
       if (request.method !== 'GET') return new Response('method', { status: 405, headers })
-      return Response.json(await sharedGet(env, 'drawings'), { headers: { ...headers, 'Cache-Control': 'no-store' } })
+      const all = (await sharedGet(env, 'drawings')) || {}
+      const orders = Object.fromEntries(Object.entries(all).filter(([, d]) => d && typeof d === 'object' && d.kind === 'order'))
+      return Response.json(orders, { headers: { ...headers, 'Cache-Control': 'no-store' } })
     }
     // 관제 화면이 30초마다 한 번에 읽는 상태: 발화 + AI 판단 + 확인 기록 + 도면 기록
     if (url.pathname === '/api/state') {
