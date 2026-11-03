@@ -467,8 +467,15 @@ export function BlockInspect({ block, requests, onClose, onRequests }: { block: 
       view.render()
       fps?.tick()
     }
-    draw()
+    // 첫 그리기 때 셰이더를 한꺼번에 컴파일하면 화면 전체가 1초 넘게 멈춘다 — 먼저 백그라운드(병렬)로 컴파일하고 그리기 시작
+    let alive = true
+    view.compileAsync().catch(() => {}).finally(() => {
+      if (!alive) return
+      if (fly) fly.t0 = clock.getElapsedTime() // 기다린 동안 지나간 시간만큼 비행 연출이 건너뛰지 않게
+      draw()
+    })
     return () => {
+      alive = false
       cancelAnimationFrame(frame)
       ro.disconnect()
       renderer.domElement.removeEventListener('pointerdown', skip)

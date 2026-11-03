@@ -13,10 +13,10 @@ const q = () => new URLSearchParams(window.location.search)
 export const isTouch = () => window.matchMedia('(pointer: coarse)').matches
 const aoWanted = () => { const v = q().get('ao'); return v === '1' || (v !== '0' && window.innerWidth >= 900 && !isTouch()) }
 
-export type View = { setSize: (w: number, h: number) => void; render: () => void; ao: (on: boolean) => void; dispose: () => void }
+export type View = { setSize: (w: number, h: number) => void; render: () => void; ao: (on: boolean) => void; compileAsync: () => Promise<unknown>; dispose: () => void }
 /** radius = 음영이 번지는 거리(장면 단위) */
 export function makeView(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, radius: number): View {
-  if (!aoWanted()) return { setSize: () => {}, render: () => renderer.render(scene, camera), ao: () => {}, dispose: () => {} }
+  if (!aoWanted()) return { setSize: () => {}, render: () => renderer.render(scene, camera), ao: () => {}, compileAsync: () => renderer.compileAsync(scene, camera), dispose: () => {} }
   const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { samples: 4, type: THREE.HalfFloatType }))
   composer.addPass(new RenderPass(scene, camera))
   const ao = new GTAOPass(scene, camera, 1, 1)
@@ -28,6 +28,13 @@ export function makeView(renderer: THREE.WebGLRenderer, scene: THREE.Scene, came
     setSize: (w, h) => { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h) },
     render: () => composer.render(),
     ao: (on) => { ao.enabled = on },
+    // 셰이더 미리 컴파일 — 장면은 화면이 아니라 composer 의 렌더 타깃에 그려지므로(톤 매핑·색 공간이 달라 셰이더도 다르다) 그 타깃 기준으로 컴파일한다
+    compileAsync: () => {
+      renderer.setRenderTarget(composer.readBuffer)
+      const p = renderer.compileAsync(scene, camera)
+      renderer.setRenderTarget(null)
+      return p
+    },
     dispose: () => { ao.dispose(); composer.dispose() },
   }
 }
