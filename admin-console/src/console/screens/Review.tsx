@@ -20,7 +20,7 @@ function Evidence({ mark }: { mark: string }) {
   const i = mark ? text.indexOf(mark) : -1
   return (
     <blockquote className="cn-evidence" style={{ margin: 0 }}>
-      <small>근거 원문 · {SCENE===1?'선체설계 책임':RADIO.speaker} 대화 · {SCENE===1?'장면 1':RADIO.at}</small>
+      <small>근거 원문 · {SCENE===1?'생산설계 책임':RADIO.speaker} 대화 · {SCENE===1?'장면 1':RADIO.at}</small>
       {i < 0 ? (
         text
       ) : (

@@ -1,5 +1,5 @@
 // B-01 러그·보강 설계 검토 요청 시연 데이터 (하드코딩). B-04·B-02 처럼 항상 /api/state 에 섞어 보낸다.
-// 발화 3줄과 설계팀(선체설계 책임)으로 가는 확인 요청. 관제에서 Ctrl+Shift+1 을 누르면 acks.__demoB01 에 그 시각이 남고,
+// 발화 3줄과 설계팀(생산설계 책임)으로 가는 확인 요청. 관제에서 Ctrl+Shift+1 을 누르면 acks.__demoB01 에 그 시각이 남고,
 // 그 시각에 현장 스트리밍으로 막 들어온 것처럼 시각이 바뀐다.
 
 const L = (category, subcategory, evidence, confidence = 0.92) => ({ category, subcategory, evidence, confidence, needs_review: false })

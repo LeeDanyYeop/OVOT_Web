@@ -22,7 +22,7 @@ export const CLOCK = { date: '최종 설계 시나리오', now: `장면 ${SCENE}
 
 export const USERS: Record<Role, { id: string; name: string; org: string; roleLabel: string; hint: string; loginLabel: string }> = {
   lead: { id: 'L-1107', name: SCENE < 4 ? '현장 담당자 1' : '현장 담당자 2', org: '협력사(하청) 우진케이', roleLabel: '생산관리/공무감독', hint: '작업 지시 · 현장 보고 처리', loginLabel: '생산관리/공무감독으로 로그인' },
-  designer: { id: 'D-2031', name: '선체설계 책임', org: 'HD현대중공업 선체설계부', roleLabel: '설계', hint: '도면 변경 등록 · 반영 확인', loginLabel: '설계로 로그인' },
+  designer: { id: 'D-2031', name: '생산설계 책임', org: 'HD현대중공업 생산설계부', roleLabel: '설계', hint: '도면 변경 등록 · 반영 확인', loginLabel: '설계로 로그인' },
 }
 
 export const RADIO = {
@@ -88,7 +88,7 @@ const OMISSION_FLAGS: FlagDef[] = [
 export const FLAGS: FlagDef[] = SCENE === 1 ? [{
  id:'ver',kind:'검토 요청',boundary:'1 · 설계 → 원청',
  title:'B-01 러그 위치와 용접·보강 조건 검토가 필요합니다',
- left:{caption:'선체설계 책임',value:'제작 후 인양 예정 · 러그 위치 및 용접·보강 조건 검토 요청'},
+ left:{caption:'생산설계 책임',value:'제작 후 인양 예정 · 러그 위치 및 용접·보강 조건 검토 요청'},
  right:{caption:'제작·인양 검토 담당자',value:'관련 도면 확인 · 필요한 검토와 협의 진행'},
  proposal:'관련 도면을 확인하고 러그 위치 및 용접·보강 조건 검토·협의 진행',
  primary:{key:'review',label:'검토 요청 확인',log:'검토 요청 확인 · 도면 검토 및 협의 진행'},
@@ -113,8 +113,8 @@ export interface BaseHistory {
 
 export const BASE_HISTORY: BaseHistory[] = [
   { at: '장면 0', actor: 'lead', text: '현장 담당자 1 · “B-01 제작은 끝났습니다. 인양 준비하려면 어느 부분 도면을 봐야 할까요?”' },
-  { at: '장면 0', actor: 'design', text: '선체설계 책임 · 블록 구조 도면과 러그 부착 부위 상세 도면을 함께 확인하기로 함' },
-  { at: '장면 1', actor: 'design', text: '선체설계 책임 → 현장 담당자 1 · B-01 러그 위치와 용접·보강 조건 검토 요청' },
+  { at: '장면 0', actor: 'design', text: '생산설계 책임 · 블록 구조 도면과 러그 부착 부위 상세 도면을 함께 확인하기로 함' },
+  { at: '장면 1', actor: 'design', text: '생산설계 책임 → 현장 담당자 1 · B-01 러그 위치와 용접·보강 조건 검토 요청' },
   { at: '장면 1', actor: 'ovot', text: '대화 수집 · 제작·인양 검토 담당자에게 검토 요청 표시. 담당자가 관련 도면 확인 및 협의 진행' },
   { at: '장면 2', actor: 'design', text: '검토·승인 절차 완료 · B-01 Rev.2 승인. 작업 전 확인 사항은 배포 지침에 포함' },
   { at: '장면 2', actor: 'lead', text: '현장 담당자 1 · “Rev.2 나왔네요. 지침도 같이 보고 내려가겠습니다.”' },

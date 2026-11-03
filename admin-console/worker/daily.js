@@ -1,5 +1,8 @@
 // FR-10 일일 보고 — 작업자 한 명의 하루(날짜) 전사문과 그날 받은 지시·도면 확인 기록만으로 퇴근 보고를 쓴다.
-// 작업자 앱 '오늘의 업무 정리'가 부른다. 가이드·시나리오 문구는 쓰지 않고, 그날 전사문이 없으면 비어 있다고 알린다.
+// 작업자 앱 '오늘의 업무 정리'가 부른다. 가이드 문구는 쓰지 않고, 그날 전사문이 없으면 비어 있다고 알린다
+// (시연 계정 김민수·강민철만 예외로 B-01 시나리오 정리를 보여 준다 — demoDaily.js).
+
+import { demoDaily } from './demoDaily.js'
 
 const PROMPT = `너는 조선소 현장 도우미다. 한 작업자의 하루치 현장 대화 전사문(STT, 오인식 가능)과 그날 받은/확인한 작업 지시·도면 변경 기록을 받는다.
 이 기록만으로 퇴근 보고를 쓴다. 기록에 없는 작업·숫자·이름은 지어내지 않는다. 알아듣기 어려운 말은 근거로 쓰지 않는다.
@@ -30,6 +33,9 @@ export async function makeDaily(env, worker, name, date, { utterances, drawings 
   for (const u of talk) sources[u.voice_id] = { kind: 'voice', time: kstTime(u.recorded_at), block: u.block_id, text: u.transcript }
   for (const d of records) sources[d.id] = { kind: d.kind === 'order' ? 'order' : 'drawing', time: kstTime(Number(d.id)), block: d.block, text: d.kind === 'order' ? d.note : `${d.rev} · ${d.note}` }
   const base = { worker, date, count: talk.length, blocks: [...new Set(talk.map((u) => u.block_id).filter(Boolean))], headline: '', done: [], issues: [], next: [], sources }
+  // 시연 계정(김민수·강민철)은 그날 대화가 없으면 B-01 러그 시나리오 정리를 보여 준다 (demoDaily.js)
+  const demo = !talk.length && demoDaily(worker)
+  if (demo) return { ...base, ...demo }
   // 대화는 없어도 그날 받은 지시가 있으면, 지시 하나하나를 체크할 '다음에 할 일'로 보여 준다 (AI 없이 기록 그대로)
   if (!talk.length && records.length) {
     const next = records.slice(0, 4).map((d) => ({ text: `${d.block ? `${d.block} ` : ''}${d.kind === 'order' ? '작업 지시' : `도면 ${d.rev}`} — ${d.note}`, evidence: [String(d.id)] }))
