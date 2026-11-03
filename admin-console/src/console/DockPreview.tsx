@@ -157,7 +157,9 @@ export function DockPreview({ role }: { role: Role }) {
     </aside>
     <main className="cn-main">
       <div className="dp-body"><header className="dp-title"><div><p className="dp-overline">{yard.name} / {dockSel.name}</p><h1>{menu==='이력'?'현장 대화 기록':menu==='현황'?'오늘의 작업 현황':label(menu)}</h1></div></header>
-      {menu==='이력'?<section className="cn-card dp-hist"><UtteranceLog/></section>:menu==='확인 요청'?<ReviewQueue by={me} role={role} onBlock={pick} onDrawing={(b)=>{setDrawBlock(b);setMenu('도면 변경')}} onOrder={(o)=>{setOrderDraft(o);setMenu('지시·변경')}}/>:menu==='도면 변경'?<DrawingForm key={drawBlock??''} blocks={blocks} by={me} initial={drawBlock}/>:menu==='지시·변경'?<DrawingRelay key={orderDraft?.from??''} by={me} blocks={blocks} draft={orderDraft}/>:<>
+      {menu==='이력'?<section className="cn-card dp-hist"><UtteranceLog/></section>:menu==='확인 요청'?<ReviewQueue by={me} role={role} onBlock={pick} onDrawing={(b)=>{setDrawBlock(b);setMenu('도면 변경')}} onOrder={(o)=>{setOrderDraft(o);setMenu('지시·변경')}}/>:menu==='도면 변경'?<DrawingForm key={drawBlock??''} blocks={blocks} by={me} initial={drawBlock}/>:menu==='지시·변경'?<DrawingRelay key={orderDraft?.from??''} by={me} blocks={blocks} draft={orderDraft}/>:null}
+      {/* 현황은 다른 메뉴로 가도 없애지 않고 숨겨 둔다 — 돌아올 때마다 3D 화면을 새로 만들면 화면이 끊긴다 */}
+      <div style={{display:menu==='현황'?'contents':'none'}}>
       {open.length>0?<button className="dp-alertline" onClick={()=>setMenu('확인 요청')}><i/><b>확인할 일 {open.length}건</b><span>{open[0].block?`${open[0].block} · `:''}{open[0].title}</span><em>보기 ›</em></button>:<div className="dp-alertline-gap"/>}
       <div className="dp-layout"><section className="cn-card dp-dock"><div className="dp-cardhead"><div><h2>Digital Twin</h2></div><span className="dp-overall">완료 {doneCount}/{twin.length} 블록 · 평균 공정률 {avg}%</span></div>
         <div className="dp-twin"><TwinScene selected={selected} onSelect={pick} labelOf={id=>blocks.find(b=>b.id===id)?.status} progressOf={progress} dockFocus={dockSel} focus={selected} alerts={alertIds} onAlert={()=>setMenu('확인 요청')}/>
@@ -171,7 +173,7 @@ export function DockPreview({ role }: { role: Role }) {
           <div className="dp-summary"><h3>지금 상황</h3><p>{utt.status[block.id]?.current?.progress||block.description}</p></div>
           <BlockCalendar key={block.id} block={block.id}/>
         </>}
-      </aside></div></>}
+      </aside></div></div>
       </div>
     </main>
   </div></div>

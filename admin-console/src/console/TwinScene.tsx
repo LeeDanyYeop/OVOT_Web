@@ -886,6 +886,7 @@ export function TwinScene({ selected, onSelect, progressOf, alerts = [], onAlert
     flyTo.current = (tp, tt) => { fly = { start: clock.getElapsedTime(), fp: camera.position.clone(), ft: controls.target.clone(), tp, tt } }
     const draw = () => {
       frame = requestAnimationFrame(draw)
+      if (!el.offsetWidth) return // 숨겨진 동안(다른 메뉴)은 그리지 않는다
       const t = clock.getElapsedTime()
       const fr = focusRef.current
       if (fr.id && fr.n !== flownFor && list.length && t > 0.6) {
